@@ -1,0 +1,14 @@
+[gd_resource type="Theme" load_steps=4 format=3 uid="uid://cqruf03y5ow43"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rimm8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8ki0n"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nb6ct"]
+bg_color = Color(0.0820313, 0.0820313, 0.0820313, 1)
+
+[resource]
+Button/styles/focus = SubResource("StyleBoxEmpty_rimm8")
+Tree/constants/draw_guides = 0
+Tree/styles/focus = SubResource("StyleBoxEmpty_8ki0n")
+Tree/styles/panel = SubResource("StyleBoxFlat_nb6ct")
