@@ -1,0 +1,87 @@
+[gd_scene load_steps=3 format=3 uid="uid://disuhcbk7pnq0"]
+
+[ext_resource type="Script" path="res://application.gd" id="1_pnrqm"]
+[ext_resource type="Script" path="res://scenen/main_tree.gd" id="2_ve1lq"]
+
+[node name="Application" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pnrqm")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonAddProject" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+text = "+"
+
+[node name="ButtonDeletProject" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+text = "-"
+
+[node name="OptionButtonProject" type="OptionButton" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 2
+popup/item_0/text = "test"
+popup/item_0/id = 0
+popup/item_1/text = "test2"
+popup/item_1/id = 1
+
+[node name="Tree" type="Tree" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_ve1lq")
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonAddItem" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+"
+
+[node name="ButtonVisible" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+toggle_mode = true
+text = "V"
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/HBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer/PanelContainer"]
+layout_mode = 2
+text = "time"

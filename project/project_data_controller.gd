@@ -29,7 +29,11 @@ func _register():
 
 #---------------------------------------------------------------------------------------------------
 func _to_string():
-	return "ProjectDataContoller#>"
+	return "ProjectDataContoller#"
+
+#---------------------------------------------------------------------------------------------------
+func initialize():
+	send_message(ProjectMessage.Initialize.new([_project_data]))
 
 #---------------------------------------------------------------------------------------------------
 func create(type:Type) -> BaseData:
@@ -39,7 +43,7 @@ func create(type:Type) -> BaseData:
 #---------------------------------------------------------------------------------------------------
 func delet(item:BaseData):
 	item.get_parent().remove_child(item)
-	send_message(ProjectMessage.DeletedMessage.new([item.get_id()]))
+	send_message(ProjectMessage.Delete.new([item.get_id()]))
 	
 #---------------------------------------------------------------------------------------------------
 func new_project_data()  -> ProjectData:
@@ -66,23 +70,31 @@ func change_property(item:BaseData, property:String, value):
 	if not item or item.get(property) == value:
 		return 
 	item.set(property, value)
-	send_message(ProjectMessage.ChangePropertyMessage.new([item.get_id(), property, value]))
+	send_message(ProjectMessage.ChangeProperty.new([item.get_id(), property, value]))
 
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	if msg is ProjectMessage.RequestChangePropertyMessage:
+	if msg is ProjectMessage:
+		handle_project_message(msg)
+		
+#---------------------------------------------------------------------------------------------------
+func handle_project_message(msg:ProjectMessage):
+	if not msg.is_request():
+		return 
+		
+	if msg is ProjectMessage.ChangeProperty:
 		change_property(get_item_by_id(msg.id), msg.property, msg.value)
 		
-	elif msg is ProjectMessage.RequestDeleteMessage:
+	elif msg is ProjectMessage.Delete:
 		delet(get_item_by_id(msg.id))
 		
-	elif msg is ProjectMessage.RequestChangeHierarchyMessage:
+	elif msg is ProjectMessage.ChangeHierarchy:
 		var drag = get_item_by_id(msg.drag_id)
 		var drop = get_item_by_id(msg.drop_id)
 		if not drag or not drop:
 			return 
 		if drag.drag_to(drop, msg.mode) == OK:
-			send_message(ProjectMessage.ChangeHierarchyMessage.new([msg.drag_id, msg.drop_id, msg.mode]))
+			send_message(ProjectMessage.ChangeHierarchy.new([msg.drag_id, msg.drop_id, msg.mode]))
 
 #---------------------------------------------------------------------------------------------------
 func send_message(msg:BaseMessage):
@@ -96,6 +108,7 @@ func serialization():
 		all_data.append(data)
 	return all_data
 
+#---------------------------------------------------------------------------------------------------
 func deserialization(data):
 	var temp_map = {}
 	var project_data
@@ -141,7 +154,6 @@ class BaseData extends UniformData:
 			"title":title,
 		}
 	
-	
 #---------------------------------------------------------------------------------------------------
 class ProjectData extends BaseData:
 	
@@ -174,7 +186,7 @@ class TodoData extends BaseData:
 	func set_data(value:Dictionary):
 		super(value)
 		state = value.get("state", false)
-		todo_meta = value.get("meta", {})
+		todo_meta = value.get("todo_meta", {})
 		
 	func get_data() -> Dictionary:
 		var data = super()

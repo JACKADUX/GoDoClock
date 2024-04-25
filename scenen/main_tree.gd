@@ -34,7 +34,7 @@ func _unhandled_key_input(event):
 		var item = get_selected()
 		if not item:
 			return
-		send_message(ProjectMessage.RequestDeleteMessage.new([get_item_id(item)]))
+		send_message(ProjectMessage.Delete.new([get_item_id(item)]).as_request())
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("tree_move_up"):
 		var item = get_selected()
@@ -43,7 +43,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_prev()
 		if not drop:
 			return 
-		send_message(ProjectMessage.RequestChangeHierarchyMessage.new([get_item_id(item), get_item_id(drop), -1]))
+		send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), -1]).as_request())
 		get_viewport().set_input_as_handled()
 		
 	elif event.is_action_pressed("tree_move_down"):
@@ -53,7 +53,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_next()
 		if not drop:
 			return 
-		send_message(ProjectMessage.RequestChangeHierarchyMessage.new([get_item_id(item), get_item_id(drop), 1]))
+		send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), 1]).as_request())
 		get_viewport().set_input_as_handled()
 	
 #---------------------------------------------------------------------------------------------------
@@ -112,7 +112,11 @@ func set_item_title(item:TreeItem, value:String):
 	
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	if msg is ProjectMessage.ChangePropertyMessage:
+	
+	if msg is ProjectMessage.Initialize:
+		init_with(msg.project)
+	
+	elif msg is ProjectMessage.ChangeProperty:
 		var item = get_item_by_id(msg.id)
 		if not item:
 			return 
@@ -122,13 +126,13 @@ func handle_message(msg:BaseMessage):
 			ProjectMessage.P_DATA_TITLE:
 				set_item_title(item, msg.value)
 				
-	elif msg is ProjectMessage.NewMessage:
+	elif msg is ProjectMessage.New:
 		new_item(msg.model)
 		
-	elif msg is ProjectMessage.DeletedMessage:
+	elif msg is ProjectMessage.Delete:
 		delet_item(get_item_by_id(msg.id))
 		
-	elif msg is ProjectMessage.ChangeHierarchyMessage:
+	elif msg is ProjectMessage.ChangeHierarchy:
 		var drag = get_item_by_id(msg.drag_id)
 		var drop = get_item_by_id(msg.drop_id)
 		match msg.mode:
@@ -153,7 +157,7 @@ func send_message(msg:BaseMessage):
 
 #---------------------------------------------------------------------------------------------------
 func send_property_changed(item:TreeItem, property:String, value):
-	send_message(ProjectMessage.RequestChangePropertyMessage.new([get_item_id(item), property, value]))
+	send_message(ProjectMessage.ChangeProperty.new([get_item_id(item), property, value]).as_request())
 	
 #---------------------------------------------------------------------------------------------------
 

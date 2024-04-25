@@ -19,8 +19,8 @@ config/icon="res://resource/icons/logo-01.png"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=300
+window/size/viewport_height=400
 
 [editor_plugins]
 
@@ -29,6 +29,7 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 [file_customization]
 
 folder_colors={
+"res://boghma/": "orange",
 "res://project/": "purple",
 "res://resource/": "yellow"
 }
