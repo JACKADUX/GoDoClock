@@ -24,7 +24,7 @@ class SimpleMessage extends BaseMessage:
 			index += 1
 			
 		if index < args.size():
-			push_warning("not all args being used! %d/%d"%[index, args.size()])
+			push_error("not all args being used! %d/%d"%[index, args.size()])
 		_kwargs = kwargs
 		
 	func _to_string():

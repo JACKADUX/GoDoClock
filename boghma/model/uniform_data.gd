@@ -1,8 +1,8 @@
-class_name UniformData extends HierarchyData
+class_name UniformData extends BaseHierarchy
 
-@export var _id:String=""
-@export var _type:int = 0
-@export var _type_string:String = ""
+var _id:String=""
+var _type:int = 0
+var _type_string:String = ""
 
 func _to_string() -> String:
 	return "<#%s>:%s"%[get_type_string(), get_id()] 

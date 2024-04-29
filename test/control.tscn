@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6m4hgtveosux"]
+
+[ext_resource type="Script" path="res://test/control.gd" id="1_1y3k4"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_1y3k4")
+
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
+initial_position = 1

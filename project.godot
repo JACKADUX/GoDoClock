@@ -12,15 +12,21 @@ config_version=5
 
 config/name="GoDo Clock"
 run/main_scene="res://application.tscn"
-config/auto_accept_quit=false
 config/features=PackedStringArray("4.3", "Forward Plus")
 boot_splash/show_image=false
 config/icon="res://resource/icons/logo-01.png"
 
+[autoload]
+
+Globals="*res://globals/globals.gd"
+ItemFactory="*res://globals/item_factory.gd"
+FileManager="*res://globals/file_manager.gd"
+
 [display]
 
-window/size/viewport_width=300
-window/size/viewport_height=400
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/subwindows/embed_subwindows=false
 
 [editor_plugins]
 

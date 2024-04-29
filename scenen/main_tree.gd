@@ -13,8 +13,8 @@ var id_map := {}
 func _ready():	
 	item_edited.connect(func():
 		var item = get_edited()
-		send_property_changed(item, ProjectMessage.P_TODO_STATE, item.is_checked(Column.CHECKED))
-		send_property_changed(item, ProjectMessage.P_DATA_TITLE, get_item_title(item))
+		#send_property_changed(item, ProjectMessage.P_TODO_STATE, item.is_checked(Column.CHECKED))
+		#send_property_changed(item, ProjectMessage.P_DATA_TITLE, get_item_title(item))
 	)
 	item_activated.connect(func():
 		var item = get_selected()
@@ -34,7 +34,7 @@ func _unhandled_key_input(event):
 		var item = get_selected()
 		if not item:
 			return
-		send_message(ProjectMessage.Delete.new([get_item_id(item)]).as_request())
+		#send_message(ProjectMessage.Delete.new([get_item_id(item)]).as_request())
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("tree_move_up"):
 		var item = get_selected()
@@ -43,7 +43,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_prev()
 		if not drop:
 			return 
-		send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), -1]).as_request())
+		#send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), -1]).as_request())
 		get_viewport().set_input_as_handled()
 		
 	elif event.is_action_pressed("tree_move_down"):
@@ -53,7 +53,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_next()
 		if not drop:
 			return 
-		send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), 1]).as_request())
+		#send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), 1]).as_request())
 		get_viewport().set_input_as_handled()
 	
 #---------------------------------------------------------------------------------------------------
@@ -64,12 +64,10 @@ func get_item_id(item:TreeItem) -> String:
 
 #---------------------------------------------------------------------------------------------------
 func get_item_by_id(id:String) -> TreeItem:
-	if id_map.has(id):
-		return instance_from_id(id_map[id])
-	return null
+	return null if not id_map.has(id) else instance_from_id(id_map[id])
 	
 #---------------------------------------------------------------------------------------------------
-func init_with(project:ProjectDataContoller.ProjectData):
+func init_with(project:BaseItem.GroupItem):
 	clear()
 	id_map = {}
 	create_item()
@@ -84,22 +82,23 @@ func delet_item(item:TreeItem):
 	item.free()
 
 #---------------------------------------------------------------------------------------------------
-func new_item(data:ProjectDataContoller.BaseData):
-	if data is ProjectDataContoller.TodoData:
-		new_todo_item(data.get_id(), data.get_title(), data.get_state(), data.get_datetime())
-
+func new_item(base_item:BaseItem):
+	if base_item is BaseItem.TodoItem:
+		new_todo_item(base_item)
+		
 #---------------------------------------------------------------------------------------------------
-func new_todo_item(id:String, title:String="Default", check:=false, tooltips="") -> TreeItem:
+func new_todo_item(base_item:BaseItem.TodoItem) -> TreeItem: 
 	var item = get_root().create_child()
+	item.set_meta("id", base_item.get_id())
+	id_map[base_item.get_id()] = item.get_instance_id()
+	
 	item.set_cell_mode(Column.CHECKED, TreeItem.CELL_MODE_CHECK)
 	item.set_editable(Column.CHECKED, true)
 	item.set_selectable(Column.CHECKED, false)
-	item.set_meta("id", id)
-	item.set_tooltip_text(Column.TITLE, tooltips)
-	id_map[id] = item.get_instance_id()
+	item.set_tooltip_text(Column.TITLE, base_item.get_datetime())
 	
-	set_item_title(item, title)
-	set_item_checked(item, check)
+	set_item_title(item, base_item.get_title())
+	set_item_checked(item, base_item.get_state())
 	return item
 
 #---------------------------------------------------------------------------------------------------
@@ -112,39 +111,42 @@ func set_item_title(item:TreeItem, value:String):
 	
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
+	if not msg is ProjectMessage:
+		return
 	
 	if msg is ProjectMessage.Initialize:
 		init_with(msg.project)
 	
-	elif msg is ProjectMessage.ChangeProperty:
-		var item = get_item_by_id(msg.id)
-		if not item:
-			return 
-		match msg.property:
-			ProjectMessage.P_TODO_STATE:
-				set_item_checked(item, msg.value)
-			ProjectMessage.P_DATA_TITLE:
-				set_item_title(item, msg.value)
-				
-	elif msg is ProjectMessage.New:
-		new_item(msg.model)
-		
-	elif msg is ProjectMessage.Delete:
-		delet_item(get_item_by_id(msg.id))
-		
-	elif msg is ProjectMessage.ChangeHierarchy:
-		var drag = get_item_by_id(msg.drag_id)
-		var drop = get_item_by_id(msg.drop_id)
-		match msg.mode:
-			-1:
-				drag.move_before(drop)
-			0:	
-				drag.get_parent().remove_child(drag)
-				drop.add_child(drag)
-			1:
-				drag.move_after(drop)
-			_:
-				push_error("not valid mod %d"%msg.mode)
+	#
+	#elif msg is ProjectMessage.ChangeProperty:
+		#var item = get_item_by_id(msg.id)
+		#if not item:
+			#return 
+		#match msg.property:
+			#ProjectMessage.P_TODO_STATE:
+				#set_item_checked(item, msg.value)
+			#ProjectMessage.P_DATA_TITLE:
+				#set_item_title(item, msg.value)
+				#
+	#elif msg is ProjectMessage.New:
+		#new_item(msg.model)
+		#
+	#elif msg is ProjectMessage.Delete:
+		#delet_item(get_item_by_id(msg.id))
+		#
+	#elif msg is ProjectMessage.ChangeHierarchy:
+		#var drag = get_item_by_id(msg.drag_id)
+		#var drop = get_item_by_id(msg.drop_id)
+		#match msg.mode:
+			#-1:
+				#drag.move_before(drop)
+			#0:	
+				#drag.get_parent().remove_child(drag)
+				#drop.add_child(drag)
+			#1:
+				#drag.move_after(drop)
+			#_:
+				#push_error("not valid mod %d"%msg.mode)
 
 		
 #---------------------------------------------------------------------------------------------------
@@ -157,7 +159,8 @@ func send_message(msg:BaseMessage):
 
 #---------------------------------------------------------------------------------------------------
 func send_property_changed(item:TreeItem, property:String, value):
-	send_message(ProjectMessage.ChangeProperty.new([get_item_id(item), property, value]).as_request())
+	pass
+	#send_message(ProjectMessage.ChangeProperty.new([get_item_id(item), property, value]).as_request())
 	
 #---------------------------------------------------------------------------------------------------
 
