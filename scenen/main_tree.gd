@@ -48,15 +48,15 @@ func _ready():
 	)
 	item_edited.connect(func():
 		var item = get_edited()
-		send_message(ProjectAction.ChangePropertyAction.create_base_title(get_item_id(item), get_item_title(item)))	
+		send_message(ProjectActionMessage.ChangePropertyAction.create_base_title(get_item_id(item), get_item_title(item)))	
 	)
 	button_clicked.connect(func(item: TreeItem, column: int, id: int, mouse_button_index: int):
 		_mouse_clicked_inside = false # 取消右击
 		match id:
 			Buttons.CHECK:
-				send_message(ProjectAction.ChangePropertyAction.create_todo_state(get_item_id(item), not get_item_checked(item)))
+				send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(item), not get_item_checked(item)))
 			Buttons.PIN:
-				send_message(ProjectAction.PinAction.new([get_item_id(item)]))
+				send_message(ProjectActionMessage.PinAction.new([get_item_id(item)]))
 	)
 	item_selected.connect(func():
 		var selected = get_next_selected(null)
@@ -102,7 +102,7 @@ func _unhandled_key_input(event):
 		var item = get_selected()
 		if not item:
 			return
-		#send_message(ProjectMessage.Delete.new([get_item_id(item)]).as_request())
+		#send_message(ProjectUpdateMessage.Delete.new([get_item_id(item)]).as_request())
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("tree_move_up"):
 		var item = get_selected()
@@ -111,7 +111,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_prev()
 		if not drop:
 			return 
-		#send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), -1]).as_request())
+		#send_message(ProjectUpdateMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), -1]).as_request())
 		get_viewport().set_input_as_handled()
 		
 	elif event.is_action_pressed("tree_move_down"):
@@ -121,7 +121,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_next()
 		if not drop:
 			return 
-		#send_message(ProjectMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), 1]).as_request())
+		#send_message(ProjectUpdateMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), 1]).as_request())
 		get_viewport().set_input_as_handled()
 
 #---------------------------------------------------------------------------------------------------
@@ -158,20 +158,20 @@ func _on_context_called(id:int):
 		selected = get_root()
 	match id:
 		PopupId.Pin:
-			send_message(ProjectAction.PinAction.new([get_item_id(selected)]))
+			send_message(ProjectActionMessage.PinAction.new([get_item_id(selected)]))
 		PopupId.UnPin:
-			send_message(ProjectAction.PinAction.new([get_item_id(get_root())]).as_backward())
+			send_message(ProjectActionMessage.PinAction.new([get_item_id(get_root())]).as_backward())
 			
 		PopupId.NewTodo:
-			send_message(ProjectAction.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(selected)]))
+			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(selected)]))
 			
 		PopupId.Delete:
 			var select = get_selected()
 			if not select:
 				return 
-			send_message(ProjectAction.DeletAction.new([get_item_id(select)]))
+			send_message(ProjectActionMessage.DeletAction.new([get_item_id(select)]))
 		PopupId.Check:
-			send_message(ProjectAction.ChangePropertyAction.create_todo_state(get_item_id(selected), not get_item_checked(selected)))
+			send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(selected), not get_item_checked(selected)))
 
 #region Drag
 #---------------------------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ func _can_drop_data(at_position, data):
 	#var section = get_drop_section_at_position(at_position)
 	#for drag_item in data.drag_items:
 		#var args = [get_item_id(drag_item), get_item_id(drop_item), section]
-		#send_message(ProjectMessage.CheckHierarchyAction.new(args))
+		#send_message(ProjectUpdateMessage.CheckHierarchyAction.new(args))
 	#
 	drop_mode_flags = DROP_MODE_INBETWEEN | DROP_MODE_ON_ITEM
 	for drag_item in data.drag_items:
@@ -228,7 +228,7 @@ func _drop_data(at_position, data):
 		drags.append(get_item_id(drag))
 	
 	var args = [drags, get_item_id(data.drop_item), section]
-	send_message(ProjectAction.ChangeHierarchyAction.new(args))
+	send_message(ProjectActionMessage.ChangeHierarchyAction.new(args))
 
 #---------------------------------------------------------------------------------------------------
 func _is_parent_child(parent_item, child_item):
@@ -405,28 +405,28 @@ func send_message(msg:BaseMessage):
 #---------------------------------------------------------------------------------------------------
 func send_property_changed(item:TreeItem, property:String, value):
 	pass
-	#send_message(ProjectMessage.ChangeProperty.new([get_item_id(item), property, value]).as_request())
+	#send_message(ProjectUpdateMessage.ChangeProperty.new([get_item_id(item), property, value]).as_request())
 	
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	if not msg is ProjectMessage:
+	if not msg is ProjectUpdateMessage:
 		return
 	
-	if msg is ProjectMessage.Initialize:
+	if msg is ProjectUpdateMessage.Initialize:
 		init_tree(msg.project)
 	
-	elif msg is ProjectMessage.PinUpdated:
+	elif msg is ProjectUpdateMessage.PinUpdated:
 		init_tree(msg.pin)
 	
-	elif msg is ProjectMessage.Add:
+	elif msg is ProjectUpdateMessage.Add:
 		var item := new_treeitem(msg.base_item, get_item(msg.parent_id))
 			
-	elif msg is ProjectMessage.Remove:
+	elif msg is ProjectUpdateMessage.Remove:
 		var item := get_item(msg.id)
 		delet_item(item)
 	
-	elif msg is ProjectMessage.PropertyUpdated:
+	elif msg is ProjectUpdateMessage.PropertyUpdated:
 		var item := get_item(msg.id)
 		match msg.key:
 			ProjectContoller.P_TODO_STATE:
@@ -434,7 +434,7 @@ func handle_message(msg:BaseMessage):
 			ProjectContoller.P_BASE_TITLE:
 				set_item_title(item, msg.value)
 				
-	elif msg is ProjectMessage.HierarchyUpdated:
+	elif msg is ProjectUpdateMessage.HierarchyUpdated:
 		var drag = get_item(msg.drag_id)
 		var drop = get_item(msg.drop_id)
 		drag_to(drag, drop, msg.section)

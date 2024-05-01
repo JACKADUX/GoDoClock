@@ -45,20 +45,20 @@ func get_item(id:String):
 
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	if msg is ProjectAction.NewAction:
+	if msg is ProjectActionMessage.NewAction:
 		var item = ItemFactory.create(msg.type)
 		var parent = get_item(msg.parent_id)
 		undoredo.create_action(str(msg))
 		BaseHierarchy.undoredo_add(undoredo, item, parent, action_add, action_remove)
 		undoredo.commit_action()
 		#BaseHierarchy.print_tree(project)
-	elif msg is ProjectAction.DeletAction:
+	elif msg is ProjectActionMessage.DeletAction:
 		var item = get_item(msg.id)
 		undoredo.create_action(str(msg))
 		BaseHierarchy.undoredo_remove(undoredo, item, action_add, action_remove)
 		undoredo.commit_action()
 		
-	elif msg is ProjectAction.ChangePropertyAction:
+	elif msg is ProjectActionMessage.ChangePropertyAction:
 		var item = get_item(msg.id)
 		undoredo.create_action(str(msg))
 		var pre_value = item.get(msg.key)
@@ -66,7 +66,7 @@ func handle_message(msg:BaseMessage):
 		undoredo.add_do_method(action_change_property.bind(item, msg.key, msg.value))
 		undoredo.commit_action()
 	
-	elif msg is ProjectAction.ChangeHierarchyAction:
+	elif msg is ProjectActionMessage.ChangeHierarchyAction:
 		undoredo.create_action(str(msg))
 		var drags = msg.drags.map(func(id): return get_item(id))
 		var drop = get_item(msg.drop_id)
@@ -77,7 +77,7 @@ func handle_message(msg:BaseMessage):
 									action_change_hierarchy  # CallBack
 									)
 		undoredo.commit_action()
-	elif msg is ProjectAction.PinAction:
+	elif msg is ProjectActionMessage.PinAction:
 		var item = get_item(msg.id)
 		if msg._backward:
 			item = item.get_parent()
@@ -93,17 +93,17 @@ func send_message(msg:BaseMessage):
 
 ##==================================================================================================
 func initialize():
-	send_message(ProjectMessage.Initialize.new([project]))
+	send_message(ProjectUpdateMessage.Initialize.new([project]))
 
 #---------------------------------------------------------------------------------------------------
 func action_add(item:BaseItem, parent:BaseItem):
 	parent.add_child(item)
-	send_message(ProjectMessage.Add.new([item, parent.get_id()]))
+	send_message(ProjectUpdateMessage.Add.new([item, parent.get_id()]))
 	
 #---------------------------------------------------------------------------------------------------
 func action_remove(item:BaseItem):
 	item.remove()
-	send_message(ProjectMessage.Remove.new([item.get_id()]))
+	send_message(ProjectUpdateMessage.Remove.new([item.get_id()]))
 
 #---------------------------------------------------------------------------------------------------
 func action_change_property(item:BaseItem, key:String, value):
@@ -112,19 +112,19 @@ func action_change_property(item:BaseItem, key:String, value):
 	if item.get(key) == value:
 		return 
 	item.set(key, value)
-	send_message(ProjectMessage.PropertyUpdated.new([item.get_id(), key, value]))
+	send_message(ProjectUpdateMessage.PropertyUpdated.new([item.get_id(), key, value]))
 
 #---------------------------------------------------------------------------------------------------
 func action_change_hierarchy(drag:BaseItem, drop:BaseItem, section:BaseHierarchy.DragDrop):
 	if not drag or not drop:
 		return 
 	if drag.drag_to(drop, section) == OK:
-		send_message(ProjectMessage.HierarchyUpdated.new([drag.get_id(), drop.get_id(), section]))
+		send_message(ProjectUpdateMessage.HierarchyUpdated.new([drag.get_id(), drop.get_id(), section]))
 
 #---------------------------------------------------------------------------------------------------
 func action_change_pin(item:BaseItem):
 	set_pint(item)
-	send_message(ProjectMessage.PinUpdated.new([get_pin()]))
+	send_message(ProjectUpdateMessage.PinUpdated.new([get_pin()]))
 
 
 

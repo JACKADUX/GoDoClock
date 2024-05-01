@@ -73,6 +73,7 @@ allow_rmb_select = true
 script = ExtResource("2_ve1lq")
 
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/HSplitContainer"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 

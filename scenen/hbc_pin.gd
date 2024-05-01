@@ -21,7 +21,7 @@ func create_context_menu():
 		popup.add_item(list[1])
 	popup.index_pressed.connect(func(index:int):
 		var id = _path_list[index][0]
-		send_message(ProjectAction.PinAction.new([id]))
+		send_message(ProjectActionMessage.PinAction.new([id]))
 		popup.queue_free()
 	)
 	popup.close_requested.connect(func():
@@ -34,11 +34,11 @@ func create_context_menu():
 
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	if msg is ProjectMessage.Initialize:
+	if msg is ProjectUpdateMessage.Initialize:
 		path_list = [[msg.project.get_id(), msg.project.get_title().get_file()]]
 		update_title()
 	
-	elif msg is ProjectMessage.PinUpdated:
+	elif msg is ProjectUpdateMessage.PinUpdated:
 		var item = msg.pin as BaseItem
 		var path_to_parent = item.path_to_root(true, true)
 		path_list = []
