@@ -195,36 +195,38 @@ static func print_tree(element:BaseHierarchy, level:int=0):
 		print_tree(child, level+1)
 
 ##==================================================================================================
-static func undoredo_add(undoredo:UndoRedo, item:BaseItem, parent:BaseItem=null, action_name:="Add"):
-	undoredo.create_action(action_name)
+static func undoredo_add(undoredo:UndoRedo, item, parent, callback_add:=Callable(), callback_remove:=Callable()):
+	undoredo.create_action("Add")
 	undoredo.add_do_method(func():
-		parent.add_child(item)
+		#parent.add_child(item)
+		callback_add.call(item, parent)
 	)
 	undoredo.add_do_reference(item)
 	undoredo.add_undo_method(func():
-		parent.remove_child(item)
+		#parent.remove_child(item)
+		callback_remove.call(item)
 	)
 	undoredo.commit_action()
 	return item
 
-
-static func undoredo_remove(undoredo:UndoRedo, item, action_name:="Remove"):
+static func undoredo_remove(undoredo:UndoRedo, item, callback_add:=Callable(), callback_remove:=Callable()):
 	var parent = item.get_parent()
 	if not parent:
 		return 
-	undoredo.create_action(action_name)
+	undoredo.create_action("Remove")
 	undoredo.add_do_method(func():
-		parent.remove_child(item)
+		#parent.remove_child(item)
+		callback_remove.call(item)
 	)
 	undoredo.add_undo_method(func():
-		parent.add_child(item)
+		#parent.add_child(item)
+		callback_add.call(item, parent)
 	)
 	undoredo.add_undo_reference(item)
 	undoredo.commit_action()
 
-
-static func undoredo_drag(undoredo:UndoRedo, drags:Array, drop, drop_mode:BaseHierarchy.DragDrop, action_name:="ChangeHierarchy"):
-	undoredo.create_action(action_name)
+static func undoredo_drag(undoredo:UndoRedo, drags:Array, drop, drop_mode:BaseHierarchy.DragDrop, call_back_fn:=Callable()):
+	undoredo.create_action("ChangeHierarchy")
 	# undo
 	for item in drags:
 		var _drop = item.get_prev()
@@ -232,15 +234,26 @@ static func undoredo_drag(undoredo:UndoRedo, drags:Array, drop, drop_mode:BaseHi
 		if not _drop:
 			_drop = item.get_parent()
 			_mode = BaseHierarchy.DragDrop.UNDER_FIRST
-		undoredo.add_undo_method(item.drag_to.bind(_drop, _mode))
+		undoredo.add_undo_method(func():
+			if call_back_fn:
+				call_back_fn.call(item, _drop, _mode)
+			else:
+				item.drag_to.bind(_drop, _mode)
+		)
 	# do
+	var drag_index = 0
 	for item in drags:
 		var _drop = drop
 		var _mode = drop_mode
-		if item.get_index() != 0:
-			_drop = drags[item.get_index()-1]
+		if drag_index != 0:
+			_drop = drags[drag_index-1]
 			_mode = BaseHierarchy.DragDrop.AFTER 
-		undoredo.add_do_method(item.drag_to.bind(_drop, _mode))
+		drag_index += 1
+		undoredo.add_do_method(func():
+			if call_back_fn:
+				call_back_fn.call(item, _drop, _mode)
+			else:
+				item.drag_to.bind(_drop, _mode)
+		)
 	undoredo.commit_action()
-
 

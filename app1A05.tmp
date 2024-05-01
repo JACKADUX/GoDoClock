@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://disuhcbk7pnq0"]
+[gd_scene load_steps=4 format=3 uid="uid://disuhcbk7pnq0"]
 
 [ext_resource type="Script" path="res://application.gd" id="1_pnrqm"]
 [ext_resource type="Script" path="res://scenen/main_tree.gd" id="2_ve1lq"]
 [ext_resource type="Script" path="res://scenen/main_menu.gd" id="2_w7nvi"]
-[ext_resource type="Script" path="res://scenen/hbc_pin.gd" id="3_dnhpd"]
 
 [node name="Application" type="Control"]
 layout_mode = 3
@@ -44,11 +43,8 @@ text = "M"
 script = ExtResource("2_w7nvi")
 
 [node name="HBC_Pin" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main"]
-unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 0
-script = ExtResource("3_dnhpd")
 
 [node name="LabelPin" type="Label" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main/HBC_Pin"]
 unique_name_in_owner = true
@@ -56,13 +52,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Project"
 horizontal_alignment = 1
-vertical_alignment = 1
-clip_text = true
 
 [node name="ButtonTime" type="Button" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main"]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 text = "T"
+
+[node name="HBC_Pin" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
+layout_mode = 2
 
 [node name="Tree" type="Tree" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true

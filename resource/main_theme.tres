@@ -5,7 +5,7 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8ki0n"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nb6ct"]
-bg_color = Color(0.0820313, 0.0820313, 0.0820313, 1)
+bg_color = Color(0.117188, 0.117188, 0.117188, 1)
 
 [resource]
 Button/styles/focus = SubResource("StyleBoxEmpty_rimm8")

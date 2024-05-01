@@ -11,7 +11,9 @@ static func connect_message_handler(sender, handler):
 func _to_string():
 	return "< BaseMessage#%d >"%get_instance_id()
 
+
 class SimpleMessage extends BaseMessage:
+	
 	var _kwargs := {}
 	func _init(args:Array, kwargs:={}):
 		var index = 0
@@ -21,8 +23,11 @@ class SimpleMessage extends BaseMessage:
 			if arg.name.begins_with("_"):
 				continue
 			self.set(arg.name, args[index])
+			assert(self.get(arg.name) == args[index],
+					"参数类型必须是一致的，否则 set 会无效 。Array[String] ！= Array" 
+					)
 			index += 1
-			
+		
 		if index < args.size():
 			push_error("not all args being used! %d/%d"%[index, args.size()])
 		_kwargs = kwargs
@@ -33,7 +38,6 @@ class SimpleMessage extends BaseMessage:
 	func get_kwargs(key:String):
 		# 保证调用时这个值一定存在，否则会报错
 		return _kwargs[key]
-
 
 
 

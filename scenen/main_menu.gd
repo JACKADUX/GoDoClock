@@ -21,7 +21,6 @@ var popup:PopupMenu:
 #--------------------------------------------------------------------------------------------------
 func _ready():
 	about_to_popup.connect(init_menubutton)
-	init_menubutton()
 	popup.id_pressed.connect(menubutton_call)
 	
 #--------------------------------------------------------------------------------------------------
@@ -34,9 +33,15 @@ func init_menubutton():
 	
 	var recents = FileManager.get_recent_list()
 	if recents:
+		var current_project = project_ctr.get_project()
 		var submenu := PopupMenu.new()
+		var index = 0
 		for i in recents:
 			submenu.add_item(i)
+			if i == current_project.get_title():
+				submenu.set_item_as_checkable(index, true)
+				submenu.set_item_checked(index, true)
+			index += 1
 		submenu.index_pressed.connect(open_recent)
 		popup.add_submenu_node_item("Open Recent", submenu, Menu.OPEN_RECENT)
 		
@@ -127,12 +132,12 @@ func open_project():
 
 #---------------------------------------------------------------------------------------------------
 func open_recent(index:int):
-	if not await save_current():
-		return 
-	var files = FileManager.get_recent_list()
+	var files = FileManager.get_recent_list() # save_current 之前调用因为recent list 会被改变
 	if files.size() <= index:
 		return 
 	var file_path = files[index]
+	if not await save_current():
+		return 
 	if not FileAccess.file_exists(file_path):
 		return 
 	if file_path.get_extension() != FileManager.GDC_EXTENSION:

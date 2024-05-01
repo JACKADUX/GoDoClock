@@ -8,10 +8,12 @@ const GDC_EXTENSION = "gdclock"
 
 #--------------------------------------------------------------------------------------------------
 func _ready():
-	FileManager.recent_list = AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_RECENT_PROJECTS, [])
+	var recents = AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_RECENT_PROJECTS, [])
+	for file in recents:
+		if not FileAccess.file_exists(file):
+			recents.erase(file)
+	FileManager.recent_list = recents
 
-
-	
 #---------------------------------------------------------------------------------------------------
 func new_project(file_path:String) -> BaseItem:
 	assert(file_path.get_extension() == GDC_EXTENSION)

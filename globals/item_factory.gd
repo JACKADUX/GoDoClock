@@ -27,7 +27,6 @@ func create(type:ItemType) -> BaseItem:
 func new_group() -> BaseItem.GroupItem:
 	return factory.create(ItemType.Group)
 
-
 #---------------------------------------------------------------------------------------------------
 func serialization(item:BaseItem):
 	var all_data = []
