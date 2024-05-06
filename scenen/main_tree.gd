@@ -129,15 +129,14 @@ func create_context_menu():
 	var selected = get_next_selected(null)
 	var popup = PopupMenu.new()
 	add_child(popup)
+	popup.add_item("Create Todo", PopupId.NewTodo)
 	if not selected and _pin_root:
+		popup.add_separator()
 		popup.add_item("UnPin", PopupId.UnPin)
 	if selected:
+		popup.add_separator()
 		popup.add_item("Pin", PopupId.Pin)
 		popup.add_item("Check", PopupId.Check)
-		popup.add_separator()
-	popup.add_item("Create Todo", PopupId.NewTodo)
-	if selected:
-		popup.add_separator()
 		popup.add_item("Delete", PopupId.Delete)
 	popup.id_pressed.connect(func(id:int):
 		_on_context_called(id)

@@ -1,0 +1,66 @@
+[gd_scene load_steps=4 format=3 uid="uid://dkcjjy7pnbv6g"]
+
+[ext_resource type="Script" path="res://scenen/clock.gd" id="1_ma47o"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e4mas"]
+bg_color = Color(0.777344, 0.695592, 0.473694, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_1h00d"]
+
+[node name="Clock" type="PanelContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+script = ExtResource("1_ma47o")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="ProgressBarTime" type="ProgressBar" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_e4mas")
+value = 88.18
+show_percentage = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="LabelTime" type="Label" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+text = "40:00"
+label_settings = SubResource("LabelSettings_1h00d")
+
+[node name="SpinBoxTime" type="SpinBox" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 120.0
+value = 40.0
+suffix = "min"
+
+[node name="ButtonStart" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+text = "Start"
+
+[node name="ButtonPause" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+auto_translate_mode = 1
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+text = "Pause"
+
+[node name="ButtonStop" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+auto_translate_mode = 1
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+text = "Stop"

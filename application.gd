@@ -3,11 +3,17 @@ extends Control
 @onready var main_menu = %MainMenu
 @onready var tree = %Tree
 @onready var hbc_pin = %HBC_Pin
+@onready var button_time = %ButtonTime
+@onready var clock = %Clock
 
 var project_ctr = ProjectContoller.new()
 
 #--------------------------------------------------------------------------------------------------
 func _ready() -> void:
+	button_time.pressed.connect(func():
+		clock.visible = button_time.button_pressed
+	)
+	
 	main_menu.project_changed.connect(func(project):
 		project_ctr.set_project(project)
 	)

@@ -8,7 +8,7 @@ const GDC_EXTENSION = "gdclock"
 
 #--------------------------------------------------------------------------------------------------
 func _ready():
-	var recents = AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_RECENT_PROJECTS, [])
+	var recents = Array(AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_RECENT_PROJECTS, []))
 	for file in recents:
 		if not FileAccess.file_exists(file):
 			recents.erase(file)

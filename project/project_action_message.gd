@@ -1,7 +1,7 @@
 # 用于向上传递命令请求
 class_name ProjectActionMessage extends BaseMessage.SimpleMessage
 
-var _is_process:bool
+var _is_process:bool=false
 func as_process(value:=true):
 	_is_process = value
 	return self
