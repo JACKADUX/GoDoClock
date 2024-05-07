@@ -29,4 +29,5 @@ MVC architecture is used, which has good scalability and stability and supports 
 	· change title
 	· undoredo
 	· clock component
+ 	· file system
 	
