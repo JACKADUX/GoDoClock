@@ -2,6 +2,7 @@ class_name MainMenu extends MenuButton
 
 signal project_changed(project:BaseItem)
 signal recent_project_pressed(index:int)
+signal quit_request
 
 enum Menu {
 	NEW_PROJECT,
@@ -20,6 +21,15 @@ var popup:PopupMenu:
 
 #--------------------------------------------------------------------------------------------------
 func _ready():
+	mouse_entered.connect(func():
+		var tween = create_tween()
+		tween.tween_property(self, "modulate", Globals.MAIN_COLOR, 0.2).from(Color.WHITE)
+	)
+	mouse_exited.connect(func():
+		var tween = create_tween()
+		tween.tween_property(self, "modulate", Color.WHITE, 0.2).from(Globals.MAIN_COLOR)
+	)
+	
 	about_to_popup.connect(init_menubutton)
 	popup.id_pressed.connect(menubutton_call)
 	
@@ -47,6 +57,7 @@ func init_menubutton():
 		
 	popup.add_separator()
 	popup.add_item("Setting", Menu.SETTING)
+	popup.set_item_disabled(popup.get_item_index(Menu.SETTING), true)
 	popup.add_separator()
 	popup.add_item("Quit", Menu.QUTI)
 
@@ -68,6 +79,9 @@ func menubutton_call(id:int):
 		Menu.SAVE_PROJECT_AS:
 			save_project_as(current_project)
 			project_changed.emit(current_project)
+			
+		Menu.QUTI:
+			quit_request.emit()
 
 #--------------------------------------------------------------------------------------------------
 func gdc_file_dialog(title:String, mode:DisplayServer.FileDialogMode) -> Array:

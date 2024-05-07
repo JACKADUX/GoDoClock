@@ -1,10 +1,16 @@
-[gd_scene load_steps=6 format=3 uid="uid://disuhcbk7pnq0"]
+[gd_scene load_steps=10 format=3 uid="uid://disuhcbk7pnq0"]
 
 [ext_resource type="Script" path="res://application.gd" id="1_pnrqm"]
+[ext_resource type="Theme" uid="uid://cqruf03y5ow43" path="res://resource/main_theme.tres" id="1_wvtm7"]
+[ext_resource type="Texture2D" uid="uid://4rt1h20tmw5f" path="res://resource/icons/menu.png" id="2_ahkom"]
 [ext_resource type="Script" path="res://scenen/main_tree.gd" id="2_ve1lq"]
 [ext_resource type="Script" path="res://scenen/main_menu.gd" id="2_w7nvi"]
 [ext_resource type="Script" path="res://scenen/hbc_pin.gd" id="3_dnhpd"]
+[ext_resource type="Texture2D" uid="uid://dwcp32jr1onby" path="res://resource/icons/clock.png" id="5_evdt1"]
 [ext_resource type="PackedScene" uid="uid://dkcjjy7pnbv6g" path="res://scenen/clock.tscn" id="5_gdhw8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xwgiv"]
+bg_color = Color(0.15, 0.15, 0.15, 1)
 
 [node name="Application" type="Control"]
 layout_mode = 3
@@ -13,9 +19,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_wvtm7")
 script = ExtResource("1_pnrqm")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,32 +30,41 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="HSplitContainer" type="HSplitContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HSplitContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 0
 
-[node name="HBC_Main" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xwgiv")
+
+[node name="HBC_Main" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer"]
 layout_mode = 2
 
-[node name="MainMenu" type="MenuButton" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main"]
+[node name="MainMenu" type="MenuButton" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer/HBC_Main"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-text = "M"
+icon = ExtResource("2_ahkom")
+icon_alignment = 1
 script = ExtResource("2_w7nvi")
 
-[node name="HBC_Pin" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main"]
+[node name="HBC_Pin" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer/HBC_Main"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 0
 script = ExtResource("3_dnhpd")
 
-[node name="LabelPin" type="Label" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main/HBC_Pin"]
+[node name="LabelPin" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer/HBC_Main/HBC_Pin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -57,22 +73,33 @@ horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
 
-[node name="ButtonTime" type="Button" parent="VBoxContainer/HSplitContainer/VBoxContainer/HBC_Main"]
+[node name="ButtonClock" type="Button" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer/HBC_Main"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
+theme_override_colors/icon_pressed_color = Color(0.8125, 0.8125, 0.8125, 1)
 toggle_mode = true
 button_pressed = true
-text = "T"
+icon = ExtResource("5_evdt1")
+flat = true
+icon_alignment = 1
 
-[node name="Tree" type="Tree" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+
+[node name="Tree" type="Tree" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 allow_rmb_select = true
+allow_search = false
 script = ExtResource("2_ve1lq")
 
-[node name="Clock" parent="VBoxContainer/HSplitContainer/VBoxContainer" instance=ExtResource("5_gdhw8")]
+[node name="Clock" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer" instance=ExtResource("5_gdhw8")]
 unique_name_in_owner = true
 layout_mode = 2

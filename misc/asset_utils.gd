@@ -3,6 +3,10 @@ class_name AssetUtils
 #---------------------------------------------------------------------------------------------------
 const S_SETTINGS := "Settings"
 const K_RECENT_PROJECTS := "recent_projects"
+const K_COUNTDOWN_TIME := "countdown_time"
+const K_WINDOW_SIZE := "window_size"
+const K_FONT_SIZE := "font_size"
+
 
 #---------------------------------------------------------------------------------------------------
 static func init_paths():

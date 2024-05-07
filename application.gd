@@ -3,24 +3,49 @@ extends Control
 @onready var main_menu = %MainMenu
 @onready var tree = %Tree
 @onready var hbc_pin = %HBC_Pin
-@onready var button_time = %ButtonTime
+@onready var button_clock = %ButtonClock
 @onready var clock = %Clock
 
 var project_ctr = ProjectContoller.new()
 
 #--------------------------------------------------------------------------------------------------
 func _ready() -> void:
-	button_time.pressed.connect(func():
-		clock.visible = button_time.button_pressed
+	resized.connect(func():
+		var win_size = DisplayServer.window_get_size(0)
+		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_SIZE, win_size)
+	)
+	
+	button_clock.pressed.connect(func():
+		clock.visible = button_clock.button_pressed
+		button_clock.modulate = Color.WHITE if button_clock.button_pressed else Color.DIM_GRAY
+	)
+	button_clock.mouse_entered.connect(func():
+		if not button_clock.button_pressed:
+			return 
+		var tween = create_tween()
+		tween.tween_property(button_clock, "modulate", Globals.MAIN_COLOR, 0.2).from(Color.WHITE)
+	)
+	button_clock.mouse_exited.connect(func():
+		if not button_clock.button_pressed:
+			return 
+		var tween = create_tween()
+		tween.tween_property(button_clock, "modulate", Color.WHITE, 0.2).from(Globals.MAIN_COLOR)
 	)
 	
 	main_menu.project_changed.connect(func(project):
 		project_ctr.set_project(project)
 	)
+	main_menu.quit_request.connect(func():
+		quit()
+	)
+	
 	connect_message_handler(project_ctr, tree)
 	connect_message_handler(tree, project_ctr)
 	connect_message_handler(project_ctr, hbc_pin)
 	connect_message_handler(hbc_pin, project_ctr)
+	
+	DisplayServer.window_set_size(AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_SIZE, Vector2i(400,600)))
+	theme.default_font_size = AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_FONT_SIZE, 20)
 	
 	AssetUtils.init_paths()
 	main_menu.project_ctr = project_ctr
@@ -34,12 +59,6 @@ func _notification(what):
 
 #--------------------------------------------------------------------------------------------------
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return 
-	if not event.is_pressed():
-		return 
-	event = event as InputEventKey
-	
 	if Input.is_action_just_pressed("undo"):
 		if project_ctr.undoredo.has_undo():
 			print("undo:",project_ctr.undoredo.get_current_action_name())
@@ -48,7 +67,18 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if project_ctr.undoredo.has_redo():
 			print("redo",project_ctr.undoredo.get_current_action_name())
 			project_ctr.undoredo.redo()
-
+			
+	elif Input.is_action_just_pressed("scale_up_font"):
+		theme.default_font_size += 4
+		theme.default_font_size = min(theme.default_font_size, 36)
+		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_FONT_SIZE, theme.default_font_size)
+		
+	elif Input.is_action_just_pressed("scale_down_font"):
+		theme.default_font_size -= 4
+		theme.default_font_size = max(theme.default_font_size, 16)
+		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_FONT_SIZE, theme.default_font_size)
+		
+	
 #--------------------------------------------------------------------------------------------------
 func connect_message_handler(sender, handler):
 	assert(handler.has_method("handle_message"))

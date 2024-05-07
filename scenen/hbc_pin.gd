@@ -35,7 +35,7 @@ func create_context_menu():
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
 	if msg is ProjectUpdateMessage.Initialize:
-		path_list = [[msg.project.get_id(), msg.project.get_title().get_file()]]
+		path_list = [[msg.project.get_id(), msg.project.get_title().get_file().get_basename()]]
 		update_title()
 	
 	elif msg is ProjectUpdateMessage.PinUpdated:
@@ -43,9 +43,9 @@ func handle_message(msg:BaseMessage):
 		var path_to_parent = item.path_to_root(true, true)
 		path_list = []
 		for _item in path_to_parent:
-			var title = _item.get_title()
+			var title :String = _item.get_title()
 			if not _item.get_parent():
-				title = title.get_file()
+				title = title.get_file().get_basename()
 			path_list.append([_item.get_id(), title])
 		update_title()
 		

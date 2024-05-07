@@ -8,7 +8,7 @@ const ICON_CHECK_SIGN = preload("res://resource/icons/check_sign.png")
 const ICON_PIN = preload("res://resource/icons/pin.png")
 var ICON_EMPTY = ImageTexture.new()
 
-const COLOR_CHECKED := Color.ORANGE
+var COLOR_CHECKED := Globals.MAIN_COLOR
 const COLOR_HOVERED := Color("282828")
 
 enum Column {
@@ -71,6 +71,7 @@ func _ready():
 	column_titles_visible = false
 	columns = Column.size()
 	allow_rmb_select = true
+	allow_search = false
 
 #---------------------------------------------------------------------------------------------------
 func _gui_input(event):
@@ -102,8 +103,29 @@ func _unhandled_key_input(event):
 		var item = get_selected()
 		if not item:
 			return
-		#send_message(ProjectUpdateMessage.Delete.new([get_item_id(item)]).as_request())
+		send_message(ProjectActionMessage.DeletAction.new([get_item_id(item)]))
 		get_viewport().set_input_as_handled()
+	
+	elif event.is_action_pressed("new_todo"):
+		var selected = get_next_selected(null)
+		if not selected:
+			selected = get_root()
+		send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(selected)]))
+	
+	elif event.is_action_pressed("pin_unpin"):
+		var selected = get_next_selected(null)
+		if selected:
+			send_message(ProjectActionMessage.PinAction.new([get_item_id(selected)]))
+		else:
+			send_message(ProjectActionMessage.PinAction.new([get_item_id(get_root())]).as_backward())
+	
+	elif event.is_action_pressed("check_uncheck"):
+		var selected = get_next_selected(null)
+		if not selected:
+			return 
+		send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(selected), not get_item_checked(selected)))
+		
+		
 	elif event.is_action_pressed("tree_move_up"):
 		var item = get_selected()
 		if not item:
@@ -111,7 +133,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_prev()
 		if not drop:
 			return 
-		#send_message(ProjectUpdateMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), -1]).as_request())
+		send_message(ProjectActionMessage.ChangeHierarchyAction.new([[get_item_id(item)], get_item_id(drop), -1]))
 		get_viewport().set_input_as_handled()
 		
 	elif event.is_action_pressed("tree_move_down"):
@@ -121,7 +143,7 @@ func _unhandled_key_input(event):
 		var drop = item.get_next()
 		if not drop:
 			return 
-		#send_message(ProjectUpdateMessage.ChangeHierarchy.new([get_item_id(item), get_item_id(drop), 1]).as_request())
+		send_message(ProjectActionMessage.ChangeHierarchyAction.new([[get_item_id(item)], get_item_id(drop), 1]))
 		get_viewport().set_input_as_handled()
 
 #---------------------------------------------------------------------------------------------------
@@ -129,14 +151,15 @@ func create_context_menu():
 	var selected = get_next_selected(null)
 	var popup = PopupMenu.new()
 	add_child(popup)
-	popup.add_item("Create Todo", PopupId.NewTodo)
+	popup.add_item("Create Todo", PopupId.NewTodo, KEY_T)
 	if not selected and _pin_root:
 		popup.add_separator()
-		popup.add_item("UnPin", PopupId.UnPin)
+		popup.add_item("UnPin", PopupId.UnPin, KEY_P)
 	if selected:
 		popup.add_separator()
-		popup.add_item("Pin", PopupId.Pin)
-		popup.add_item("Check", PopupId.Check)
+		popup.add_item("Pin", PopupId.Pin, KEY_P)
+		popup.add_item("Check", PopupId.Check, KEY_C)
+		popup.add_separator()
 		popup.add_item("Delete", PopupId.Delete)
 	popup.id_pressed.connect(func(id:int):
 		_on_context_called(id)
