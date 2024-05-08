@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://disuhcbk7pnq0"]
+[gd_scene load_steps=11 format=3 uid="uid://disuhcbk7pnq0"]
 
 [ext_resource type="Script" path="res://application.gd" id="1_pnrqm"]
 [ext_resource type="Theme" uid="uid://cqruf03y5ow43" path="res://resource/main_theme.tres" id="1_wvtm7"]
@@ -11,6 +11,8 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xwgiv"]
 bg_color = Color(0.15, 0.15, 0.15, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qsnu8"]
 
 [node name="Application" type="Control"]
 layout_mode = 3
@@ -64,6 +66,15 @@ size_flags_horizontal = 3
 mouse_filter = 0
 script = ExtResource("3_dnhpd")
 
+[node name="LineEditTitle" type="LineEdit" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer/HBC_Main/HBC_Pin"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/focus = SubResource("StyleBoxEmpty_qsnu8")
+placeholder_text = "Project Title"
+alignment = 1
+
 [node name="LabelPin" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer/PanelContainer/HBC_Main/HBC_Pin"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -96,8 +107,11 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+focus_mode = 0
 allow_rmb_select = true
 allow_search = false
+hide_root = true
+select_mode = 2
 script = ExtResource("2_ve1lq")
 
 [node name="Clock" parent="PanelContainer/VBoxContainer/HSplitContainer/VBoxContainer" instance=ExtResource("5_gdhw8")]

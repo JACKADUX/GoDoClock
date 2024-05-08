@@ -3,7 +3,7 @@ class_name ProjectUpdateMessage extends BaseMessage.SimpleMessage
 
 #---------------------------------------------------------------------------------------------------
 class Initialize extends ProjectUpdateMessage: 
-	var project:BaseItem.GroupItem
+	var project:BaseItem.ProjectItem
 	func _to_string():
 		return "Initialize"
 

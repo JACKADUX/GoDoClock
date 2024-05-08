@@ -3,14 +3,32 @@ class_name PinHeader extends HBoxContainer
 signal message_sended(msg:BaseMessage)
 
 @onready var label_pin = %LabelPin
+@onready var line_edit_title = %LineEditTitle
 
 var path_list := []
+
+var _edit_active := false
+
+func _ready():
+	line_edit_title.text_submitted.connect(func(v):
+		finish_edit_title()
+	)
+	
+func _input(event):
+	if _edit_active:
+		if event is InputEventMouseButton and event.is_pressed():
+			if not line_edit_title.get_global_rect().has_point(get_global_mouse_position()):
+				finish_edit_title()
 
 func _gui_input(event):
 	if Input.is_action_just_released("mouse_right"):
 		if path_list.size() > 1:
 			create_context_menu()
+	if event is InputEventMouseButton and event.double_click:
+		start_edit_title()
 		
+		
+			
 #---------------------------------------------------------------------------------------------------
 func create_context_menu():
 	var popup = PopupMenu.new()
@@ -35,7 +53,7 @@ func create_context_menu():
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
 	if msg is ProjectUpdateMessage.Initialize:
-		path_list = [[msg.project.get_id(), msg.project.get_title().get_file().get_basename()]]
+		path_list = [[msg.project.get_id(), msg.project.get_title()]]
 		update_title()
 	
 	elif msg is ProjectUpdateMessage.PinUpdated:
@@ -44,8 +62,6 @@ func handle_message(msg:BaseMessage):
 		path_list = []
 		for _item in path_to_parent:
 			var title :String = _item.get_title()
-			if not _item.get_parent():
-				title = title.get_file().get_basename()
 			path_list.append([_item.get_id(), title])
 		update_title()
 		
@@ -63,3 +79,21 @@ func update_title():
 #---------------------------------------------------------------------------------------------------
 func send_message(msg:BaseMessage):
 	message_sended.emit(msg)
+
+#---------------------------------------------------------------------------------------------------
+func start_edit_title():
+	_edit_active = true
+	label_pin.hide()
+	line_edit_title.show()
+	line_edit_title.grab_focus()
+	line_edit_title.text = path_list[0][1]
+	line_edit_title.select_all()
+	
+func finish_edit_title():
+	_edit_active = false
+	label_pin.show()
+	line_edit_title.hide()
+	var id = path_list[0][0]
+	path_list[0][1] = line_edit_title.text
+	send_message(ProjectActionMessage.ChangePropertyAction.create_base_title(id, line_edit_title.text))
+	update_title()

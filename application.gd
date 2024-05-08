@@ -10,28 +10,11 @@ var project_ctr = ProjectContoller.new()
 
 #--------------------------------------------------------------------------------------------------
 func _ready() -> void:
-	resized.connect(func():
-		var win_size = DisplayServer.window_get_size(0)
-		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_SIZE, win_size)
-	)
 	
 	button_clock.pressed.connect(func():
 		clock.visible = button_clock.button_pressed
 		button_clock.modulate = Color.WHITE if button_clock.button_pressed else Color.DIM_GRAY
 	)
-	button_clock.mouse_entered.connect(func():
-		if not button_clock.button_pressed:
-			return 
-		var tween = create_tween()
-		tween.tween_property(button_clock, "modulate", Globals.MAIN_COLOR, 0.2).from(Color.WHITE)
-	)
-	button_clock.mouse_exited.connect(func():
-		if not button_clock.button_pressed:
-			return 
-		var tween = create_tween()
-		tween.tween_property(button_clock, "modulate", Color.WHITE, 0.2).from(Globals.MAIN_COLOR)
-	)
-	
 	main_menu.project_changed.connect(func(project):
 		project_ctr.set_project(project)
 	)
@@ -45,6 +28,7 @@ func _ready() -> void:
 	connect_message_handler(hbc_pin, project_ctr)
 	
 	DisplayServer.window_set_size(AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_SIZE, Vector2i(400,600)))
+	DisplayServer.window_set_position(AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_POSITION, DisplayServer.window_get_position()))
 	theme.default_font_size = AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_FONT_SIZE, 20)
 	
 	AssetUtils.init_paths()
@@ -77,8 +61,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		theme.default_font_size -= 4
 		theme.default_font_size = max(theme.default_font_size, 16)
 		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_FONT_SIZE, theme.default_font_size)
-		
-	
+
 #--------------------------------------------------------------------------------------------------
 func connect_message_handler(sender, handler):
 	assert(handler.has_method("handle_message"))
@@ -89,8 +72,10 @@ func connect_message_handler(sender, handler):
 
 #--------------------------------------------------------------------------------------------------
 func quit():
-	main_menu.save_current()
-	get_tree().quit()
+	AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_SIZE, DisplayServer.window_get_size(0))
+	AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_WINDOW_POSITION, DisplayServer.window_get_position(0))
+	if await main_menu.save_current():
+		get_tree().quit()
 	
 
 			

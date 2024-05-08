@@ -1,0 +1,43 @@
+
+
+# 0.3.0
+	· window size/position saved as setting when quit
+	· new project now all saved in default path.
+	· support double click pinbar for project title editing
+	· recent project show project title instead of path
+	· multi-selections support
+	· adapt all actions for multi-selections
+	· add new ProjectItem as the root of the project
+	· add shortcut:
+		· Move to First : ctrl~[
+		· Move Up : [
+		· Move Down : ]
+		· Move to Last : ctrl~]
+	· auto check parent todo when child all checked
+		
+# 0.2.0
+	· user interface optimized
+	· hide prograss bar when countdown stopped
+	· hide project extension in pinbar
+	· add shortcut:
+		· Delete : delete
+		· Move Up : ctrl~-
+		· Move Down : ctrl~+
+		· New Todo : T
+		· Pin/Unpin : P
+		· Check/Uncheck : C
+		· Font Size Scale Down: Shift~-  (min 16)
+		· Font Size Scale Up: Shift~+  (max 36)
+	· countdown saved as setting when start button pressed
+	· window size saved as setting when resize window
+	· font size saved as setting when change size
+	
+# 0.1.0
+	· todo item
+	· pin/unpin
+	· check/uncheck
+	· change hierarchy
+	· change title
+	· undoredo
+	· clock component
+	

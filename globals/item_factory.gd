@@ -3,7 +3,7 @@ extends Node
 var factory := Factory.new()
 
 enum ItemType {
-	Group,
+	Project,
 	Todo,
 }
 
@@ -16,7 +16,7 @@ func _init():
 			return instance 
 		)
 		
-	simple_register.call(BaseItem.GroupItem, ItemType.Group)
+	simple_register.call(BaseItem.ProjectItem, ItemType.Project)
 	simple_register.call(BaseItem.TodoItem, ItemType.Todo)
 	
 #--------------------------------------------------------------------------------------------------
@@ -24,22 +24,22 @@ func create(type:ItemType) -> BaseItem:
 	return factory.create(type)
 	
 #--------------------------------------------------------------------------------------------------
-func new_group() -> BaseItem.GroupItem:
-	return factory.create(ItemType.Group)
+func new_project() -> BaseItem.ProjectItem:
+	return factory.create(ItemType.Project)
 
 #---------------------------------------------------------------------------------------------------
 func serialization(item:BaseItem):
-	var all_data = []
+	var item_datas = []
 	for sub_item:BaseItem in item.iterate():
-		var data = sub_item.serialization()
-		all_data.append(data)
-	return all_data
+		var item_data = sub_item.serialization()
+		item_datas.append(item_data)
+	return item_datas
 
 #---------------------------------------------------------------------------------------------------
-func deserialization(data:Array):
+func deserialization(item_datas:Array):
 	var temp_map = {}
 	var project
-	for item_data in data:
+	for item_data in item_datas:
 		var item :BaseItem = ItemFactory.create(item_data.type)
 		temp_map[item_data.id] = item
 		if not project:

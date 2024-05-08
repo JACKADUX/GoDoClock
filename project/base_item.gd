@@ -52,6 +52,25 @@ func get_datetime():
 class GroupItem extends BaseItem:pass
 
 #---------------------------------------------------------------------------------------------------
+class ProjectItem extends BaseItem:
+	var path := ""
+	
+	func get_path():
+		return path
+	
+	func set_path(value:String):
+		path = value
+		
+	func deserialization(value:Dictionary):
+		super(value)
+		path = value.get("path", "")
+		
+	func serialization() -> Dictionary:
+		var data = super()
+		data["path"] = get_path()
+		return data
+	
+#---------------------------------------------------------------------------------------------------
 class TodoItem extends BaseItem:
 	
 	var state:= false

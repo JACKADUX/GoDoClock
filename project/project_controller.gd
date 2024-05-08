@@ -5,7 +5,7 @@ signal message_sended(msg:BaseMessage)
 const P_TODO_STATE:="state"
 const P_BASE_TITLE:="title"
 
-var project :BaseItem
+var project :BaseItem.ProjectItem
 var pin:BaseItem
 
 var undoredo:=UndoRedo.new()
@@ -13,7 +13,7 @@ var undoredo:=UndoRedo.new()
 #---------------------------------------------------------------------------------------------------
 func _init():
 	undoredo.max_steps = 50
-	project = ItemFactory.new_group()
+	project = ItemFactory.new_project()
 
 #---------------------------------------------------------------------------------------------------
 func get_project() -> BaseItem:
@@ -25,7 +25,7 @@ func set_project(value:BaseItem):
 	initialize()
 
 #---------------------------------------------------------------------------------------------------
-func set_pint(value:BaseItem):
+func set_pin(value:BaseItem):
 	pin = value
 	if not pin:
 		pin = project
@@ -45,13 +45,20 @@ func get_item(id:String):
 
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	if msg is ProjectActionMessage.NewAction:
+	
+	if msg is ProjectActionMessage.BundleAction:
+		undoredo.create_action(msg.action_name)
+		for _msg in msg.messages:
+			handle_message(_msg)
+		undoredo.commit_action()
+	
+	elif msg is ProjectActionMessage.NewAction:
 		var item = ItemFactory.create(msg.type)
 		var parent = get_item(msg.parent_id)
 		undoredo.create_action(str(msg))
 		BaseHierarchy.undoredo_add(undoredo, item, parent, action_add, action_remove)
 		undoredo.commit_action()
-		#BaseHierarchy.print_tree(project)
+		
 	elif msg is ProjectActionMessage.DeletAction:
 		var item = get_item(msg.id)
 		undoredo.create_action(str(msg))
@@ -65,6 +72,7 @@ func handle_message(msg:BaseMessage):
 		undoredo.add_undo_method(action_change_property.bind(item, msg.key, pre_value))
 		undoredo.add_do_method(action_change_property.bind(item, msg.key, msg.value))
 		undoredo.commit_action()
+		dirty_action_property_changed(item)
 	
 	elif msg is ProjectActionMessage.ChangeHierarchyAction:
 		undoredo.create_action(str(msg))
@@ -106,14 +114,15 @@ func action_remove(item:BaseItem):
 	send_message(ProjectUpdateMessage.Remove.new([item.get_id()]))
 
 #---------------------------------------------------------------------------------------------------
-func action_change_property(item:BaseItem, key:String, value):
+func action_change_property(item:BaseItem, key:String, value) -> bool:
 	if not item:
-		return 
+		return false
 	if item.get(key) == value:
-		return 
+		return false
 	item.set(key, value)
 	send_message(ProjectUpdateMessage.PropertyUpdated.new([item.get_id(), key, value]))
-
+	return true
+	
 #---------------------------------------------------------------------------------------------------
 func action_change_hierarchy(drag:BaseItem, drop:BaseItem, section:BaseHierarchy.DragDrop):
 	if not drag or not drop:
@@ -123,11 +132,20 @@ func action_change_hierarchy(drag:BaseItem, drop:BaseItem, section:BaseHierarchy
 
 #---------------------------------------------------------------------------------------------------
 func action_change_pin(item:BaseItem):
-	set_pint(item)
+	set_pin(item)
 	send_message(ProjectUpdateMessage.PinUpdated.new([get_pin()]))
 
-
-
+#---------------------------------------------------------------------------------------------------
+func dirty_action_property_changed(item:BaseItem):
+	var parent = item.get_parent()
+	if parent is BaseItem.TodoItem:
+		var check = true
+		for child in parent.get_children():
+			if child is BaseItem.TodoItem and not child.get_state():
+				check = false
+				break
+		if action_change_property(parent, P_TODO_STATE, check):
+			dirty_action_property_changed(parent)
 
 
 

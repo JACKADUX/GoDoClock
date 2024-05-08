@@ -24,6 +24,10 @@ enum PopupId {
 	NewGroup,
 	NewTodo,
 	Delete,
+	MoveToFirst,
+	MoveUp,
+	MoveDown,
+	MoveToLast,
 }
 
 enum Buttons {
@@ -54,14 +58,24 @@ func _ready():
 		_mouse_clicked_inside = false # 取消右击
 		match id:
 			Buttons.CHECK:
-				send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(item), not get_item_checked(item)))
+				var selects = get_all_selected_items()
+				if item not in selects:
+					send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(item), not get_item_checked(item)))
+				else:
+					var check = not get_item_checked(item)
+					var bundle_msg = ProjectActionMessage.BundleAction.empty("Check")
+					for _item in selects:
+						var msg = ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(_item), check)
+						bundle_msg.add_action(msg)
+					send_message(bundle_msg)
+						
 			Buttons.PIN:
 				send_message(ProjectActionMessage.PinAction.new([get_item_id(item)]))
 	)
-	item_selected.connect(func():
-		var selected = get_next_selected(null)
-		if selected and selected == _hovered:
-			selected.clear_custom_bg_color(Column.TITLE)
+
+	multi_selected.connect(func(item: TreeItem, column: int, selected: bool):
+		if selected and item == _hovered:
+			item.clear_custom_bg_color(Column.TITLE)
 	)
 	empty_clicked.connect(func(_1, _2):
 		deselect_all()
@@ -72,6 +86,7 @@ func _ready():
 	columns = Column.size()
 	allow_rmb_select = true
 	allow_search = false
+	select_mode = SELECT_MULTI
 
 #---------------------------------------------------------------------------------------------------
 func _gui_input(event):
@@ -96,71 +111,69 @@ func _process(delta):
 		_mouse_clicked_inside = false
 		create_context_menu()
 		
-		
 #---------------------------------------------------------------------------------------------------
 func _unhandled_key_input(event):
 	if event.is_action_pressed("ui_graph_delete"):
-		var item = get_selected()
-		if not item:
-			return
-		send_message(ProjectActionMessage.DeletAction.new([get_item_id(item)]))
+		_on_context_called(PopupId.Delete)
 		get_viewport().set_input_as_handled()
 	
 	elif event.is_action_pressed("new_todo"):
-		var selected = get_next_selected(null)
-		if not selected:
-			selected = get_root()
-		send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(selected)]))
-	
-	elif event.is_action_pressed("pin_unpin"):
-		var selected = get_next_selected(null)
-		if selected:
-			send_message(ProjectActionMessage.PinAction.new([get_item_id(selected)]))
-		else:
-			send_message(ProjectActionMessage.PinAction.new([get_item_id(get_root())]).as_backward())
-	
-	elif event.is_action_pressed("check_uncheck"):
-		var selected = get_next_selected(null)
-		if not selected:
-			return 
-		send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(selected), not get_item_checked(selected)))
-		
-		
-	elif event.is_action_pressed("tree_move_up"):
-		var item = get_selected()
-		if not item:
-			return 
-		var drop = item.get_prev()
-		if not drop:
-			return 
-		send_message(ProjectActionMessage.ChangeHierarchyAction.new([[get_item_id(item)], get_item_id(drop), -1]))
+		_on_context_called(PopupId.NewTodo)
 		get_viewport().set_input_as_handled()
 		
-	elif event.is_action_pressed("tree_move_down"):
-		var item = get_selected()
-		if not item:
+	elif event.is_action_pressed("pin_unpin"):
+		var selects = get_all_selected_items()
+		if selects.size() == 1:
+			_on_context_called(PopupId.Pin)
+		elif selects.size() == 0:
+			_on_context_called(PopupId.UnPin)
+		else:
 			return 
-		var drop = item.get_next()
-		if not drop:
-			return 
-		send_message(ProjectActionMessage.ChangeHierarchyAction.new([[get_item_id(item)], get_item_id(drop), 1]))
+		get_viewport().set_input_as_handled()
+		
+	elif event.is_action_pressed("check_uncheck"):
+		_on_context_called(PopupId.Check)
+		get_viewport().set_input_as_handled()
+		
+	elif event.is_action_pressed("move_to_first"):
+		_on_context_called(PopupId.MoveToFirst)
 		get_viewport().set_input_as_handled()
 
+		
+	elif event.is_action_pressed("move_to_last"):
+		_on_context_called(PopupId.MoveToLast)
+		get_viewport().set_input_as_handled()
+	
+			
+	elif event.is_action_pressed("move_up"):
+		_on_context_called(PopupId.MoveUp)
+		get_viewport().set_input_as_handled()
+		
+	elif event.is_action_pressed("move_down"):
+		_on_context_called(PopupId.MoveDown)
+		get_viewport().set_input_as_handled()
+		
 #---------------------------------------------------------------------------------------------------
 func create_context_menu():
-	var selected = get_next_selected(null)
+	var selects = get_all_selected_items()
 	var popup = PopupMenu.new()
 	add_child(popup)
 	popup.add_item("Create Todo", PopupId.NewTodo, KEY_T)
-	if not selected and _pin_root:
+	if not selects and _pin_root:
 		popup.add_separator()
 		popup.add_item("UnPin", PopupId.UnPin, KEY_P)
-	if selected:
+	if selects:
 		popup.add_separator()
-		popup.add_item("Pin", PopupId.Pin, KEY_P)
+		if selects.size() == 1:
+			popup.add_item("Pin", PopupId.Pin, KEY_P)
 		popup.add_item("Check", PopupId.Check, KEY_C)
 		popup.add_separator()
-		popup.add_item("Delete", PopupId.Delete)
+		popup.add_item("Move to First", PopupId.MoveToFirst, KEY_MASK_CTRL + KEY_BRACKETLEFT)
+		popup.add_item("Move Up", PopupId.MoveUp, KEY_BRACKETLEFT)
+		popup.add_item("Move Down", PopupId.MoveDown, KEY_BRACKETRIGHT)
+		popup.add_item("Move to Last", PopupId.MoveToLast, KEY_MASK_CTRL + KEY_BRACKETRIGHT)
+		popup.add_separator()
+		popup.add_item("Delete", PopupId.Delete, KEY_DELETE)
 	popup.id_pressed.connect(func(id:int):
 		_on_context_called(id)
 		popup.queue_free()
@@ -175,25 +188,102 @@ func create_context_menu():
 
 #---------------------------------------------------------------------------------------------------
 func _on_context_called(id:int):
-	var selected = get_next_selected(null)
-	if not selected:
-		selected = get_root()
+	var selects = get_all_selected_items()
 	match id:
 		PopupId.Pin:
-			send_message(ProjectActionMessage.PinAction.new([get_item_id(selected)]))
+			if selects.size() != 1:
+				return 
+			send_message(ProjectActionMessage.PinAction.new([get_item_id(selects[0])]))
+			
 		PopupId.UnPin:
+			if selects.size() != 0:
+				return 
 			send_message(ProjectActionMessage.PinAction.new([get_item_id(get_root())]).as_backward())
 			
 		PopupId.NewTodo:
-			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(selected)]))
-			
+			var parent
+			if not selects:
+				parent = get_root()
+			else:
+				parent = selects[0]
+			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(parent)]))
+
 		PopupId.Delete:
-			var select = get_selected()
-			if not select:
+			if not selects:
 				return 
-			send_message(ProjectActionMessage.DeletAction.new([get_item_id(select)]))
+			var bundle_msg = ProjectActionMessage.BundleAction.empty("DeletAction")
+			for _item in selects:
+				var msg = ProjectActionMessage.DeletAction.new([get_item_id(_item)])
+				bundle_msg.add_action(msg)
+			send_message(bundle_msg)
+			
 		PopupId.Check:
-			send_message(ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(selected), not get_item_checked(selected)))
+			if not selects:
+				return 
+			var check = not get_item_checked(selects[0])
+			var bundle_msg = ProjectActionMessage.BundleAction.empty("ChangePropertyAction")
+			for _item in selects:
+				var msg = ProjectActionMessage.ChangePropertyAction.create_todo_state(get_item_id(_item), check)
+				bundle_msg.add_action(msg)
+			send_message(bundle_msg)
+		
+		PopupId.MoveToFirst, PopupId.MoveToLast:
+			if not selects:
+				return 
+			
+			var drags :Array = []
+			var drop_item = selects[0].get_parent()
+			var section = 2 if id == PopupId.MoveToFirst else 0
+
+			for drag in selects:
+				if get_item_id(drag.get_parent()) in drags:
+					continue
+				drags.append(get_item_id(drag))
+			
+			var args = [drags, get_item_id(drop_item), section]
+			send_message(ProjectActionMessage.ChangeHierarchyAction.new(args))
+			
+		PopupId.MoveUp: 
+			if not selects:
+				return 
+			var drags :Array = []
+			var drop_item = selects[0].get_prev()
+			var section = -1
+			if not drop_item:
+				drop_item = selects.pop_front()
+				section = 1
+					
+			for drag in selects:
+				if get_item_id(drag.get_parent()) in drags:
+					continue
+				drags.append(get_item_id(drag))
+			
+			var args = [drags, get_item_id(drop_item), section]
+			send_message(ProjectActionMessage.ChangeHierarchyAction.new(args))	
+				
+		PopupId.MoveDown: 
+			if not selects:
+				return 
+			var drags :Array = []
+			var drop_item = selects[0].get_next()
+			var section = 1
+			
+			while drop_item:
+				if drop_item not in selects:
+					break
+				drop_item = drop_item.get_next() 
+			
+			if not drop_item:
+				drop_item = selects.pop_front()
+
+			for drag in selects:
+				if get_item_id(drag.get_parent()) in drags:
+					continue
+				drags.append(get_item_id(drag))
+			
+			var args = [drags, get_item_id(drop_item), section]
+			send_message(ProjectActionMessage.ChangeHierarchyAction.new(args))	
+				
 
 #region Drag
 #---------------------------------------------------------------------------------------------------
@@ -319,7 +409,6 @@ func drag_to(drag:TreeItem, drop:TreeItem, section:int):
 		_:
 			push_error("invalid section")
 
-	
 #endregion
 
 
@@ -354,12 +443,22 @@ func new_treeitem(base_item:BaseItem, parent:TreeItem) -> TreeItem:
 	id_map[base_item.get_id()] = item.get_instance_id()
 	item.set_meta(META_ID_KEY, base_item.get_id())
 	
-	if base_item is BaseItem.TodoItem:
+	if base_item is BaseItem.ProjectItem:
+		init_project_item(item, base_item)
+	elif base_item is BaseItem.TodoItem:
 		init_todo_item(item, base_item)
+	
 	# iter
 	for child:BaseItem in base_item.get_children():
 		new_treeitem(child, item)
 	return item
+
+#---------------------------------------------------------------------------------------------------
+func init_project_item(item:TreeItem, base_item:BaseItem.ProjectItem):
+	item.set_icon(Column.TITLE, null)
+	item.set_icon_modulate(Column.TITLE, COLOR_CHECKED)
+	set_item_title(item, base_item.get_title())
+	item.set_tooltip_text(Column.TITLE, base_item.get_datetime())
 
 #---------------------------------------------------------------------------------------------------
 func init_todo_item(item:TreeItem, base_item:BaseItem.TodoItem):
@@ -370,7 +469,7 @@ func init_todo_item(item:TreeItem, base_item:BaseItem.TodoItem):
 	item.add_button(Column.TITLE, ICON_CHECK_0, Buttons.CHECK)	
 	set_item_checked(item, base_item.get_state())
 	item.set_tooltip_text(Column.TITLE, base_item.get_datetime())
-
+	
 #---------------------------------------------------------------------------------------------------
 func set_item_checked(item:TreeItem, value:bool):
 	item.set_meta(META_ID_CHECKED, value)
@@ -424,10 +523,6 @@ func get_all_selected_items() -> Array:
 func send_message(msg:BaseMessage):
 	message_sended.emit(msg)
 
-#---------------------------------------------------------------------------------------------------
-func send_property_changed(item:TreeItem, property:String, value):
-	pass
-	#send_message(ProjectUpdateMessage.ChangeProperty.new([get_item_id(item), property, value]).as_request())
 	
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
@@ -450,6 +545,8 @@ func handle_message(msg:BaseMessage):
 	
 	elif msg is ProjectUpdateMessage.PropertyUpdated:
 		var item := get_item(msg.id)
+		if not item:
+			return 
 		match msg.key:
 			ProjectContoller.P_TODO_STATE:
 				set_item_checked(item, msg.value)

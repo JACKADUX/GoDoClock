@@ -21,15 +21,6 @@ var popup:PopupMenu:
 
 #--------------------------------------------------------------------------------------------------
 func _ready():
-	mouse_entered.connect(func():
-		var tween = create_tween()
-		tween.tween_property(self, "modulate", Globals.MAIN_COLOR, 0.2).from(Color.WHITE)
-	)
-	mouse_exited.connect(func():
-		var tween = create_tween()
-		tween.tween_property(self, "modulate", Color.WHITE, 0.2).from(Globals.MAIN_COLOR)
-	)
-	
 	about_to_popup.connect(init_menubutton)
 	popup.id_pressed.connect(menubutton_call)
 	
@@ -46,9 +37,16 @@ func init_menubutton():
 		var current_project = project_ctr.get_project()
 		var submenu := PopupMenu.new()
 		var index = 0
-		for i in recents:
-			submenu.add_item(i)
-			if i == current_project.get_title():
+		for file_path in recents:
+			if not AssetUtils.is_valid_project_path(file_path):
+				continue
+			var title = file_path
+			var meta = JsonHelper.load_meta(file_path)
+			var item_datas = meta.get("item_datas")
+			if item_datas:
+				title = "%s"%[item_datas[0].title]
+			submenu.add_item(title)
+			if file_path == current_project.get_path():
 				submenu.set_item_as_checkable(index, true)
 				submenu.set_item_checked(index, true)
 			index += 1
@@ -75,6 +73,7 @@ func menubutton_call(id:int):
 		Menu.SAVE_PROJECT: 
 			if save_project(current_project) != OK:
 				save_project_as(current_project)
+			project_changed.emit(current_project)
 				
 		Menu.SAVE_PROJECT_AS:
 			save_project_as(current_project)
@@ -85,25 +84,31 @@ func menubutton_call(id:int):
 
 #--------------------------------------------------------------------------------------------------
 func gdc_file_dialog(title:String, mode:DisplayServer.FileDialogMode) -> Array:
-	var gdc_filter = "*.%s"%FileManager.GDC_EXTENSION
+	var gdc_filter = "*.%s"%AssetUtils.GDC_EXTENSION
 	return Utils.file_dialog(title, [gdc_filter], mode)
-
 
 #---------------------------------------------------------------------------------------------------
 func quick_open():
-	for file in FileManager.get_recent_list():
+	var recent = FileManager.get_recent_list()
+	var open_file = ""
+	var project
+	for file in recent:
 		if not FileAccess.file_exists(file):
 			continue
-		if file.get_extension() != FileManager.GDC_EXTENSION:
+		if file.get_extension() != AssetUtils.GDC_EXTENSION:
 			continue
-		project_changed.emit(FileManager.open_project(file))
+		open_file = file
 		break
+	if FileAccess.file_exists(open_file):
+		project = FileManager.open_project(open_file)
+	if not project:
+		project = FileManager.new_project(AssetUtils.new_project_path())
+	project_changed.emit(project)
 
 #---------------------------------------------------------------------------------------------------
 func save_current() -> bool:
 	# 如果想继续后续的操作返回 true 否则返回 false
 	var current_project = project_ctr.get_project()
-	var file_path = current_project.get_title()
 	var RC := CustomConfirmationDialog.ResultCode
 	if save_project(current_project) != OK:
 		match await confirm_save_project():
@@ -120,12 +125,7 @@ func save_current() -> bool:
 func new_project():
 	if not await save_current():
 		return 
-	var files = gdc_file_dialog("New Project", DisplayServer.FILE_DIALOG_MODE_SAVE_FILE)
-	if not files:
-		return 
-	var file_path = files[0]
-	if file_path.get_extension() != FileManager.GDC_EXTENSION:
-		file_path += ".%s"%FileManager.GDC_EXTENSION
+	var file_path = AssetUtils.new_project_path()
 	var project = FileManager.new_project(file_path)
 	if project:
 		project_changed.emit(project)
@@ -138,7 +138,7 @@ func open_project():
 	if not files:
 		return 
 	var file_path = files[0]
-	if file_path.get_extension() != FileManager.GDC_EXTENSION:
+	if not AssetUtils.is_valid_project_path(file_path):
 		return 
 	var project = FileManager.open_project(file_path)
 	if project:
@@ -154,7 +154,7 @@ func open_recent(index:int):
 		return 
 	if not FileAccess.file_exists(file_path):
 		return 
-	if file_path.get_extension() != FileManager.GDC_EXTENSION:
+	if not AssetUtils.is_valid_project_path(file_path):
 		return 
 	var project = FileManager.open_project(file_path)
 	if project:
@@ -163,7 +163,7 @@ func open_recent(index:int):
 #--------------------------------------------------------------------------------------------------
 func save_project(project:BaseItem) -> Error:
 	# 如果默认保存路径存在就返回 OK 
-	var file_path = project.get_title()
+	var file_path = project.get_path()
 	if FileAccess.file_exists(file_path):
 		FileManager.save_project(project)
 		add_to_recent(file_path)
@@ -176,9 +176,9 @@ func save_project_as(project:BaseItem) -> Error:
 	if not files:
 		return FAILED
 	var file_path = files[0]
-	if file_path.get_extension() != FileManager.GDC_EXTENSION:
-		file_path += ".%s"%FileManager.GDC_EXTENSION
-	project.set_title(file_path)
+	if file_path.get_extension() != AssetUtils.GDC_EXTENSION:
+		file_path += ".%s"%AssetUtils.GDC_EXTENSION
+	project.set_path(file_path)
 	FileManager.save_project(project)
 	add_to_recent(file_path)
 	return OK

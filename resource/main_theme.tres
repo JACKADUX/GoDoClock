@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=6 format=3 uid="uid://cqruf03y5ow43"]
+[gd_resource type="Theme" load_steps=9 format=3 uid="uid://cqruf03y5ow43"]
 
 [ext_resource type="FontFile" uid="uid://ctyf51c60qwe5" path="res://resource/fonts/inter/Inter-VariableFont_slnt,wght.ttf" id="1_dvyrc"]
 
@@ -7,10 +7,19 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ykceg"]
 bg_color = Color(0.101563, 0.101563, 0.101563, 1)
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1hrd5"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_w58cg"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8ki0n"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nb6ct"]
 draw_center = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bgkq2"]
+bg_color = Color(0.0588235, 0.0588235, 0.0588235, 0.682353)
+expand_margin_left = 2048.0
+expand_margin_right = 2048.0
 
 [resource]
 default_font = ExtResource("1_dvyrc")
@@ -20,5 +29,8 @@ Button/colors/icon_pressed_color = Color(0.678431, 1, 0.184314, 1)
 Button/styles/focus = SubResource("StyleBoxEmpty_rimm8")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_ykceg")
 Tree/constants/draw_guides = 0
+Tree/styles/cursor = SubResource("StyleBoxEmpty_1hrd5")
+Tree/styles/cursor_unfocused = SubResource("StyleBoxEmpty_w58cg")
 Tree/styles/focus = SubResource("StyleBoxEmpty_8ki0n")
 Tree/styles/panel = SubResource("StyleBoxFlat_nb6ct")
+Tree/styles/selected = SubResource("StyleBoxFlat_bgkq2")

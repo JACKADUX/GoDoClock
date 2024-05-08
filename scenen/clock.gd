@@ -20,14 +20,13 @@ var time:float = 0:  # s
 var started := false
 var paused := false
 
-var _spin_value := 0
 
 func _ready():
+	spin_box_time.value_changed.connect(func(v):
+		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_COUNTDOWN_TIME, spin_box_time.value)
+	)
+	
 	button_start.pressed.connect(func():
-		if spin_box_time.value != _spin_value:
-			_spin_value = spin_box_time.value
-			AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_COUNTDOWN_TIME, _spin_value)
-		
 		if paused:
 			button_start.hide()
 			button_pause.show()
@@ -75,7 +74,6 @@ func _ready():
 	time = 0
 	
 	spin_box_time.value = AssetUtils.get_configs(AssetUtils.S_SETTINGS, AssetUtils.K_COUNTDOWN_TIME, 40)
-	_spin_value = spin_box_time.value
 	
 func _process(delta):
 	if not started:
