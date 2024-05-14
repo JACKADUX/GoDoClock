@@ -22,7 +22,7 @@ var paused := false
 
 
 func _ready():
-	spin_box_time.value_changed.connect(func(v):
+	spin_box_time.value_changed.connect(func(_v):
 		AssetUtils.save_configs(AssetUtils.S_SETTINGS, AssetUtils.K_COUNTDOWN_TIME, spin_box_time.value)
 	)
 	

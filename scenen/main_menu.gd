@@ -1,7 +1,6 @@
 class_name MainMenu extends MenuButton
 
 signal project_changed(project:BaseItem)
-signal recent_project_pressed(index:int)
 signal quit_request
 
 enum Menu {
@@ -10,6 +9,7 @@ enum Menu {
 	SAVE_PROJECT_AS,
 	OPEN_PROJECT,
 	OPEN_RECENT,
+	PROJECT_FOLDER,
 	SETTING,
 	QUTI
 }
@@ -31,6 +31,7 @@ func init_menubutton():
 	popup.add_item("Save Project", Menu.SAVE_PROJECT)
 	popup.add_item("Save Project As...", Menu.SAVE_PROJECT_AS)
 	popup.add_item("Open Project", Menu.OPEN_PROJECT)
+	popup.add_item("Open Project Folder", Menu.PROJECT_FOLDER)
 	
 	var recents = FileManager.get_recent_list()
 	if recents:
@@ -78,7 +79,9 @@ func menubutton_call(id:int):
 		Menu.SAVE_PROJECT_AS:
 			save_project_as(current_project)
 			project_changed.emit(current_project)
-			
+		
+		Menu.PROJECT_FOLDER:
+			OS.shell_open(ProjectSettings.globalize_path(AssetUtils.get_root_path()))
 		Menu.QUTI:
 			quit_request.emit()
 

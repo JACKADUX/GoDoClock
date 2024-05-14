@@ -1,5 +1,12 @@
 
 
+# 0.4.0
+	· Double-click the blank space to create a new Todo object. 
+	· Now a new to-do item will be created on top of the selected item.
+	· Undo/Redo on Add and Delete will keep hierarchical relationships.
+	· Now Tooltip display title information.
+	· open default project folder
+
 # 0.3.0
 	· window size/position saved as setting when quit
 	· new project now all saved in default path.

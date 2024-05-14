@@ -26,7 +26,8 @@ class BundleAction extends ProjectActionMessage:
 #---------------------------------------------------------------------------------------------------
 class NewAction extends ProjectActionMessage:
 	var type:int
-	var parent_id:String
+	var drop_id:String
+	var section: int  # -> BaseHierarchy.DragDrop
 	func _to_string():
 		return "NewAction"
 
@@ -44,11 +45,11 @@ class ChangePropertyAction extends ProjectActionMessage:
 	func _to_string():
 		return "ChangePropertyAction"
 	
-	static func create_todo_state(id:String, value):
-		return ChangePropertyAction.new([id, ProjectContoller.P_TODO_STATE, value])
+	static func create_todo_state(_id:String, _value):
+		return ChangePropertyAction.new([_id, ProjectContoller.P_TODO_STATE, _value])
 	
-	static func create_base_title(id:String, value):
-		return ChangePropertyAction.new([id, ProjectContoller.P_BASE_TITLE, value])
+	static func create_base_title(_id:String, _value):
+		return ChangePropertyAction.new([_id, ProjectContoller.P_BASE_TITLE, _value])
 		
 #---------------------------------------------------------------------------------------------------
 class ChangeHierarchyAction extends ProjectActionMessage:

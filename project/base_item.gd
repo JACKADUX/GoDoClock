@@ -1,6 +1,5 @@
 class_name BaseItem extends UniformData
 
-var _debug_value :int = 0
 var title:String=""
 var datetime:String = ""
 

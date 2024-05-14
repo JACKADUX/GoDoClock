@@ -40,7 +40,7 @@ func get_pin():
 func _to_string():
 	return "<ProjectContoller>"
 
-func get_item(id:String):
+func get_item(id:String) -> BaseItem:
 	return instance_from_id(int(id))
 
 #---------------------------------------------------------------------------------------------------
@@ -54,15 +54,32 @@ func handle_message(msg:BaseMessage):
 	
 	elif msg is ProjectActionMessage.NewAction:
 		var item = ItemFactory.create(msg.type)
-		var parent = get_item(msg.parent_id)
+		var drop = get_item(msg.drop_id)
+		var parent
+		match msg.section:
+			0, 2: parent = drop
+			-1, 1: parent = drop.get_parent()
+				
 		undoredo.create_action(str(msg))
 		BaseHierarchy.undoredo_add(undoredo, item, parent, action_add, action_remove)
+		BaseHierarchy.undoredo_drag(undoredo, 
+									[item],  
+									drop, 
+									msg.section, # section,
+									action_change_hierarchy  # CallBack
+									)
 		undoredo.commit_action()
 		
 	elif msg is ProjectActionMessage.DeletAction:
-		var item = get_item(msg.id)
+		var item := get_item(msg.id)
+		var drop = item.get_prev()
+		var section = 1
+		if not drop:
+			drop = item.get_parent()
+			section = 2
 		undoredo.create_action(str(msg))
 		BaseHierarchy.undoredo_remove(undoredo, item, action_add, action_remove)
+		undoredo.add_undo_method(action_change_hierarchy.bind(item, drop, section))
 		undoredo.commit_action()
 		
 	elif msg is ProjectActionMessage.ChangePropertyAction:
@@ -72,7 +89,7 @@ func handle_message(msg:BaseMessage):
 		undoredo.add_undo_method(action_change_property.bind(item, msg.key, pre_value))
 		undoredo.add_do_method(action_change_property.bind(item, msg.key, msg.value))
 		undoredo.commit_action()
-		dirty_action_property_changed(item)
+		dirty_action_property_changed.call_deferred(item)
 	
 	elif msg is ProjectActionMessage.ChangeHierarchyAction:
 		undoredo.create_action(str(msg))

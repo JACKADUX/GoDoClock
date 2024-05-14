@@ -10,7 +10,6 @@ var project_ctr = ProjectContoller.new()
 
 #--------------------------------------------------------------------------------------------------
 func _ready() -> void:
-	
 	button_clock.pressed.connect(func():
 		clock.visible = button_clock.button_pressed
 		button_clock.modulate = Color.WHITE if button_clock.button_pressed else Color.DIM_GRAY
@@ -42,7 +41,7 @@ func _notification(what):
 			quit()
 
 #--------------------------------------------------------------------------------------------------
-func _unhandled_key_input(event: InputEvent) -> void:
+func _unhandled_key_input(_event: InputEvent) -> void:
 	if Input.is_action_just_pressed("undo"):
 		if project_ctr.undoredo.has_undo():
 			print("undo:",project_ctr.undoredo.get_current_action_name())

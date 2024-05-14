@@ -10,7 +10,7 @@ var path_list := []
 var _edit_active := false
 
 func _ready():
-	line_edit_title.text_submitted.connect(func(v):
+	line_edit_title.text_submitted.connect(func(_v):
 		finish_edit_title()
 	)
 	

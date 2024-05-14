@@ -30,7 +30,7 @@ func init_with(_title:String, _dialog_text:String) -> ResultHelper:
 func init_with_discard(_title:String, _dialog_text:String) -> ResultHelper:
 	var result_helper := init_with(_title, _dialog_text)
 	add_button("Discard", true, "Discard")
-	custom_action.connect(func(acname:String):
+	custom_action.connect(func(_acname:String):
 		result = ResultCode.DISCARD
 		hide()
 		result_helper.success()

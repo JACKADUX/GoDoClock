@@ -54,7 +54,7 @@ func _ready():
 		var item = get_edited()
 		send_message(ProjectActionMessage.ChangePropertyAction.create_base_title(get_item_id(item), get_item_title(item)))	
 	)
-	button_clicked.connect(func(item: TreeItem, column: int, id: int, mouse_button_index: int):
+	button_clicked.connect(func(item: TreeItem, _column: int, id: int, _mouse_button_index: int):
 		_mouse_clicked_inside = false # 取消右击
 		match id:
 			Buttons.CHECK:
@@ -73,7 +73,7 @@ func _ready():
 				send_message(ProjectActionMessage.PinAction.new([get_item_id(item)]))
 	)
 
-	multi_selected.connect(func(item: TreeItem, column: int, selected: bool):
+	multi_selected.connect(func(item: TreeItem, _column: int, selected: bool):
 		if selected and item == _hovered:
 			item.clear_custom_bg_color(Column.TITLE)
 	)
@@ -89,7 +89,7 @@ func _ready():
 	select_mode = SELECT_MULTI
 
 #---------------------------------------------------------------------------------------------------
-func _gui_input(event):
+func _gui_input(event):	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed():
 		_mouse_clicked_inside = true
 		
@@ -104,7 +104,7 @@ func _gui_input(event):
 		_hovered = item
 		
 #---------------------------------------------------------------------------------------------------
-func _process(delta):
+func _process(_delta):
 	# 选择treeitem会发生在gui_inpu结束后 Input.is_action_just_pressed 调用之前
 	# 所以需要用这种奇怪的方法执行
 	if Input.is_action_just_released("mouse_right") and _mouse_clicked_inside:
@@ -168,10 +168,10 @@ func create_context_menu():
 			popup.add_item("Pin", PopupId.Pin, KEY_P)
 		popup.add_item("Check", PopupId.Check, KEY_C)
 		popup.add_separator()
-		popup.add_item("Move to First", PopupId.MoveToFirst, KEY_MASK_CTRL + KEY_BRACKETLEFT)
+		popup.add_item("Move to First", PopupId.MoveToFirst, KEY_MASK_CTRL | KEY_BRACKETLEFT)
 		popup.add_item("Move Up", PopupId.MoveUp, KEY_BRACKETLEFT)
 		popup.add_item("Move Down", PopupId.MoveDown, KEY_BRACKETRIGHT)
-		popup.add_item("Move to Last", PopupId.MoveToLast, KEY_MASK_CTRL + KEY_BRACKETRIGHT)
+		popup.add_item("Move to Last", PopupId.MoveToLast, KEY_MASK_CTRL | KEY_BRACKETRIGHT)
 		popup.add_separator()
 		popup.add_item("Delete", PopupId.Delete, KEY_DELETE)
 	popup.id_pressed.connect(func(id:int):
@@ -201,12 +201,16 @@ func _on_context_called(id:int):
 			send_message(ProjectActionMessage.PinAction.new([get_item_id(get_root())]).as_backward())
 			
 		PopupId.NewTodo:
-			var parent
+			var drop
+			var section
 			if not selects:
-				parent = get_root()
+				drop = get_root()
+				section = 2
 			else:
-				parent = selects[0]
-			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(parent)]))
+				drop = selects[0]
+				section = -1
+				
+			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(drop), section]))
 
 		PopupId.Delete:
 			if not selects:
@@ -387,6 +391,8 @@ func _make_drag_preview(items:Array):
 
 #---------------------------------------------------------------------------------------------------
 func drag_to(drag:TreeItem, drop:TreeItem, section:int):
+	if not drop or not drag:
+		return 
 	if drop == drag:
 		return 
 	match section:
@@ -458,7 +464,7 @@ func init_project_item(item:TreeItem, base_item:BaseItem.ProjectItem):
 	item.set_icon(Column.TITLE, null)
 	item.set_icon_modulate(Column.TITLE, COLOR_CHECKED)
 	set_item_title(item, base_item.get_title())
-	item.set_tooltip_text(Column.TITLE, base_item.get_datetime())
+	item.set_tooltip_text(Column.TITLE, base_item.get_title())
 
 #---------------------------------------------------------------------------------------------------
 func init_todo_item(item:TreeItem, base_item:BaseItem.TodoItem):
@@ -468,7 +474,7 @@ func init_todo_item(item:TreeItem, base_item:BaseItem.TodoItem):
 	item.add_button(Column.TITLE, ICON_EMPTY, Buttons.PIN)
 	item.add_button(Column.TITLE, ICON_CHECK_0, Buttons.CHECK)	
 	set_item_checked(item, base_item.get_state())
-	item.set_tooltip_text(Column.TITLE, base_item.get_datetime())
+	item.set_tooltip_text(Column.TITLE, base_item.get_title())
 	
 #---------------------------------------------------------------------------------------------------
 func set_item_checked(item:TreeItem, value:bool):
@@ -501,7 +507,10 @@ func set_hovered(item:TreeItem, value:bool):
 		
 #---------------------------------------------------------------------------------------------------
 func set_item_selected(item:TreeItem, value:bool):
-	item.select(Column.TITLE) if value else item.deselect(Column.TITLE)
+	if value:
+		item.select(Column.TITLE) 
+	else:
+		item.deselect(Column.TITLE)
 	# NOTE:下面是为了关闭取消选择后对象的focus框
 	# godot的多选永远都是从树的上面到下面的顺序执行
 	var _selected = get_next_selected(null)
