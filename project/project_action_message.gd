@@ -50,6 +50,9 @@ class ChangePropertyAction extends ProjectActionMessage:
 	
 	static func create_base_title(_id:String, _value):
 		return ChangePropertyAction.new([_id, ProjectContoller.P_BASE_TITLE, _value])
+	
+	static func create_base_fold_state(_id:String, _value):
+		return ChangePropertyAction.new([_id, ProjectContoller.P_BASE_FOLD_STATE, _value])
 		
 #---------------------------------------------------------------------------------------------------
 class ChangeHierarchyAction extends ProjectActionMessage:

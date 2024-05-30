@@ -4,10 +4,9 @@ signal message_sended(msg:BaseMessage)
 
 const P_TODO_STATE:="state"
 const P_BASE_TITLE:="title"
+const P_BASE_FOLD_STATE:="fold_state"
 
 var project :BaseItem.ProjectItem
-var pin:BaseItem
-
 var undoredo:=UndoRedo.new()
 
 #---------------------------------------------------------------------------------------------------
@@ -22,20 +21,11 @@ func get_project() -> BaseItem:
 #---------------------------------------------------------------------------------------------------
 func set_project(value:BaseItem):
 	project = value
-	initialize()
-
-#---------------------------------------------------------------------------------------------------
-func set_pin(value:BaseItem):
-	pin = value
-	if not pin:
-		pin = project
-	
-#---------------------------------------------------------------------------------------------------
-func get_pin():
-	if not pin:
-		pin = project
-	return pin
-	
+	if not project.get_pin():
+		initialize()
+	else:
+		action_change_pin(project.get_pin())
+		
 #---------------------------------------------------------------------------------------------------
 func _to_string():
 	return "<ProjectContoller>"
@@ -45,7 +35,6 @@ func get_item(id:String) -> BaseItem:
 
 #---------------------------------------------------------------------------------------------------
 func handle_message(msg:BaseMessage):
-	
 	if msg is ProjectActionMessage.BundleAction:
 		undoredo.create_action(msg.action_name)
 		for _msg in msg.messages:
@@ -107,7 +96,9 @@ func handle_message(msg:BaseMessage):
 		if msg._backward:
 			item = item.get_parent()
 		undoredo.create_action(str(msg))
-		var prev = get_pin()
+		var prev = project.get_pin()
+		if not prev:
+			prev = project
 		undoredo.add_undo_method(action_change_pin.bind(prev))
 		undoredo.add_do_method(action_change_pin.bind(item))
 		undoredo.commit_action()
@@ -149,8 +140,8 @@ func action_change_hierarchy(drag:BaseItem, drop:BaseItem, section:BaseHierarchy
 
 #---------------------------------------------------------------------------------------------------
 func action_change_pin(item:BaseItem):
-	set_pin(item)
-	send_message(ProjectUpdateMessage.PinUpdated.new([get_pin()]))
+	project.set_pin(item)
+	send_message(ProjectUpdateMessage.PinUpdated.new([project.get_pin()]))
 
 #---------------------------------------------------------------------------------------------------
 func dirty_action_property_changed(item:BaseItem):

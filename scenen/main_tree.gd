@@ -44,6 +44,9 @@ var _hovered :TreeItem
 
 #---------------------------------------------------------------------------------------------------
 func _ready():	
+	item_collapsed.connect(func(_item:TreeItem):
+		send_message(ProjectActionMessage.ChangePropertyAction.create_base_fold_state(get_item_id(_item), _item.collapsed))
+	)
 	item_activated.connect(func():
 		var selected = get_next_selected(null)
 		if not selected:
@@ -208,7 +211,7 @@ func _on_context_called(id:int):
 				section = 2
 			else:
 				drop = selects[0]
-				section = -1
+				section = 1
 				
 			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(drop), section]))
 
@@ -439,6 +442,8 @@ func init_tree(base_item:BaseItem):
 	if not base_item:
 		return 
 	var item = new_treeitem(base_item, null)
+	# 必须要这样， 否则pin的时候会因为折叠而无法显示子部
+	item.collapsed = false 
 	# 任何一个不是项目根目录的对象都会有parent
 	_pin_root = null if not base_item.get_parent() else item
 		
@@ -448,7 +453,7 @@ func new_treeitem(base_item:BaseItem, parent:TreeItem) -> TreeItem:
 	# init data
 	id_map[base_item.get_id()] = item.get_instance_id()
 	item.set_meta(META_ID_KEY, base_item.get_id())
-	
+	item.collapsed = base_item.get_fold_state()
 	if base_item is BaseItem.ProjectItem:
 		init_project_item(item, base_item)
 	elif base_item is BaseItem.TodoItem:
@@ -561,6 +566,8 @@ func handle_message(msg:BaseMessage):
 				set_item_checked(item, msg.value)
 			ProjectContoller.P_BASE_TITLE:
 				set_item_title(item, msg.value)
+			ProjectContoller.P_BASE_FOLD_STATE:
+				item.collapsed = msg.value
 				
 	elif msg is ProjectUpdateMessage.HierarchyUpdated:
 		var drag = get_item(msg.drag_id)
