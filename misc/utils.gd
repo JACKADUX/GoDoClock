@@ -12,6 +12,3 @@ static func file_dialog(title:String="Files", filter=[], mode=DisplayServer.FILE
 								filter,
 								_on_folder_selected)
 	return files
-
-
-

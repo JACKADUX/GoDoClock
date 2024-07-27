@@ -212,6 +212,9 @@ func _on_context_called(id:int):
 			else:
 				drop = selects[0]
 				section = 1
+				if Input.is_key_label_pressed(KEY_SHIFT):
+					section = 2
+					deselect_all()
 				
 			send_message(ProjectActionMessage.NewAction.new([ItemFactory.ItemType.Todo, get_item_id(drop), section]))
 
@@ -342,7 +345,7 @@ func _drop_data(at_position, data):
 		section = 0
 	var drags :Array = []
 	for drag in data.drag_items:
-		if get_item_id(drag.get_parent()) in drags:
+		if drag.get_parent() in data.drag_items:
 			continue
 		drags.append(get_item_id(drag))
 	
@@ -432,7 +435,10 @@ func get_item(id:String) -> TreeItem:
 
 #---------------------------------------------------------------------------------------------------
 func delet_item(item:TreeItem):
-	item.get_parent().remove_child(item)
+	if not item:
+		return 
+	if item.get_parent():
+		item.get_parent().remove_child(item)
 	item.free()
 
 #---------------------------------------------------------------------------------------------------
@@ -573,23 +579,3 @@ func handle_message(msg:BaseMessage):
 		var drag = get_item(msg.drag_id)
 		var drop = get_item(msg.drop_id)
 		drag_to(drag, drop, msg.section)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

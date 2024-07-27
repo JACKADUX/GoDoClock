@@ -84,22 +84,3 @@ static func load_configs():
 static func get_configs(section: String, key: String, default=null):
 	var config = load_configs()
 	return config.get_value(section, key, default)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

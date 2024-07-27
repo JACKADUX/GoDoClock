@@ -59,22 +59,3 @@ func add_to_recent_list(file_path:String) -> Error:
 
 func clear_recent_list():
 	recent_list.clear()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

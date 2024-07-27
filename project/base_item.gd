@@ -104,4 +104,3 @@ class TodoItem extends BaseItem:
 		var data = super()
 		data["state"] = get_state()
 		return data
-

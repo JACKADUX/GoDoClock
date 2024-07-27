@@ -38,8 +38,3 @@ class SimpleMessage extends BaseMessage:
 	func get_kwargs(key:String):
 		# 保证调用时这个值一定存在，否则会报错
 		return _kwargs[key]
-
-
-
-
-

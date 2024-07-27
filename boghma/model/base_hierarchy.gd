@@ -147,43 +147,38 @@ func iterate():
 
 #endregion
 class Iterator:
-	var _current:BaseHierarchy
 	var ori:BaseHierarchy
+	var _current:BaseHierarchy
 	
 	func _init(current):
-		_current = current
 		ori = current
+		_current = current
 
 	func _iter_init(arg):
 		_current = ori
 		return _current
 	
-	func get_next(obj:BaseHierarchy):
-		var parent = obj.get_parent()
-		if not parent:
-			return 
-		var count = parent.get_child_count()
-		var index = obj.get_index()+1 
-		if index < count:
-			return parent.get_child(index)
-	
 	func _iter_next(arg):
-		if _current.get_child_count() >0:
+		if _current.get_child_count() != 0:
 			_current = _current.get_child(0)
 			return true
-		var next = get_next(_current)
+		if _current == ori:
+			return false
+		var parent = _current.get_parent()
+		if not parent:
+			return false
+		var next = _current.get_next()
 		if next:
 			_current = next
 			return true
 		while true:
-			var parent = _current.get_parent()
-			if not parent:
+			if parent == ori:
 				return false
-			next = get_next(parent)
-			if next:
-				_current = next
+			var pn = parent.get_next()
+			if pn:
+				_current = pn
 				return true
-			_current = parent
+			parent = parent.get_parent()
 		return false
 
 	func _iter_get(arg):
@@ -256,4 +251,3 @@ static func undoredo_drag(undoredo:UndoRedo, drags:Array, drop, drop_mode:BaseHi
 				item.drag_to.bind(_drop, _mode)
 		)
 	undoredo.commit_action()
-

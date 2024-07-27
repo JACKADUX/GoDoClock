@@ -6,10 +6,23 @@ extends Control
 @onready var button_clock = %ButtonClock
 @onready var clock = %Clock
 
+@onready var auto_save_timer = %AutoSaveTimer
+
+
 var project_ctr = ProjectContoller.new()
+
+var _prev_undoredo_version := 0
 
 #--------------------------------------------------------------------------------------------------
 func _ready() -> void:
+	auto_save_timer.timeout.connect(func():
+		var ur_version = project_ctr.undoredo.get_version()
+		if _prev_undoredo_version == ur_version:
+			return 
+		_prev_undoredo_version = ur_version
+		main_menu.save_current()
+	)
+	
 	button_clock.pressed.connect(func():
 		clock.visible = button_clock.button_pressed
 		button_clock.modulate = Color.WHITE if button_clock.button_pressed else Color.DIM_GRAY
@@ -34,6 +47,8 @@ func _ready() -> void:
 	main_menu.project_ctr = project_ctr
 	main_menu.quick_open()
 	
+	_prev_undoredo_version = project_ctr.undoredo.get_version()
+	
 #--------------------------------------------------------------------------------------------------
 func _notification(what):
 	match what:
@@ -46,6 +61,7 @@ func _unhandled_key_input(_event: InputEvent) -> void:
 		if project_ctr.undoredo.has_undo():
 			print("undo:",project_ctr.undoredo.get_current_action_name())
 			project_ctr.undoredo.undo()
+			
 	elif Input.is_action_just_pressed("redo"):
 		if project_ctr.undoredo.has_redo():
 			print("redo",project_ctr.undoredo.get_current_action_name())
@@ -65,7 +81,7 @@ func _unhandled_key_input(_event: InputEvent) -> void:
 func connect_message_handler(sender, handler):
 	assert(handler.has_method("handle_message"))
 	sender.message_sended.connect(func(msg):
-		prints(sender, "[Send]:", msg, "[To]:", handler)
+		#prints(sender, "[Send]:", msg, "[To]:", handler)
 		handler.handle_message(msg)
 	)
 
@@ -78,10 +94,3 @@ func quit():
 	
 
 			
-
-
-
-
-
-
-

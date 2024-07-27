@@ -16,7 +16,8 @@ run/main_scene="res://application.tscn"
 config/auto_accept_quit=false
 config/features=PackedStringArray("4.3", "Forward Plus")
 boot_splash/show_image=false
-config/icon="res://resource/icons/logo-02.png"
+config/icon="res://resource/icons/icon.png"
+config/windows_native_icon="res://resource/icons/icon.ico"
 
 [autoload]
 

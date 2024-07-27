@@ -94,7 +94,11 @@ func handle_message(msg:BaseMessage):
 	elif msg is ProjectActionMessage.PinAction:
 		var item = get_item(msg.id)
 		if msg._backward:
+			if item == project:
+				return 
 			item = item.get_parent()
+		if not item:
+			item = project
 		undoredo.create_action(str(msg))
 		var prev = project.get_pin()
 		if not prev:
@@ -141,7 +145,7 @@ func action_change_hierarchy(drag:BaseItem, drop:BaseItem, section:BaseHierarchy
 #---------------------------------------------------------------------------------------------------
 func action_change_pin(item:BaseItem):
 	project.set_pin(item)
-	send_message(ProjectUpdateMessage.PinUpdated.new([project.get_pin()]))
+	send_message.call_deferred(ProjectUpdateMessage.PinUpdated.new([project.get_pin()]))
 
 #---------------------------------------------------------------------------------------------------
 func dirty_action_property_changed(item:BaseItem):
@@ -154,7 +158,3 @@ func dirty_action_property_changed(item:BaseItem):
 				break
 		if action_change_property(parent, P_TODO_STATE, check):
 			dirty_action_property_changed(parent)
-
-
-
-

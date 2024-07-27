@@ -1,12 +1,20 @@
 
 
-# 0.6.0 rc
+# 0.7.0 rc
+	· auto save
+	· shift+t will create item under selection
+	· bug fix: unpin crash
+	· bug fix: delete with parent item
+
+# 0.6.0
+	· bug fix: drag mulity hierarchy 
+	· bug fix: hierarchy iterate
 
 # 0.5.0
 	· save fold state
 	· save pin
 	· arrow key to select, enter to rename
-	· Now a new to-do item will be created on bottom of the selected item.
+	· Now a new to-do item will be created next to the selected item.
 	· bug fix: pin item not show sub items when it's closed
 	
 # 0.4.0
