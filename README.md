@@ -7,7 +7,20 @@ MVC architecture is used, which has good scalability and stability and supports 
 ![微信截图_20240509013259](https://github.com/JACKADUX/GoDoClock/assets/87265559/6c8d0988-1cd1-4546-acf9-9c00d01ef561)
 
 
-
+# 0.5.0
+	· save fold state
+	· save pin
+	· arrow key to select, enter to rename
+	· Now a new to-do item will be created next to the selected item.
+	· bug fix: pin item not show sub items when it's closed
+	
+# 0.4.0
+	· Double-click the blank space to create a new Todo object. 
+	· Now a new to-do item will be created on top of the selected item.
+	· Undo/Redo on Add and Delete will keep hierarchical relationships.
+	· Now Tooltip display title information.
+	· open default project folder
+ 
 # 0.3.0
 	· window size/position saved as setting when quit
 	· new project now all saved in default path.
